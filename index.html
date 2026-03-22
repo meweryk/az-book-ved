@@ -10,92 +10,90 @@
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#f5f0e6">
 </head>
-<body class="container py-4">
-  <h1 class="mb-4">Каталог Знаків</h1>
-  
-  <!-- Пошук за символом -->
-  <div class="section mb-4">
-    <h4>Пошук за символом</h4>
-    <div class="input-group">
-      <input id="searchInput" type="text" class="form-control" placeholder="Введіть символ або властивість">
-      <button class="btn btn-primary btn-sm" onclick="searchSymbol()">Знайти</button>
-      <button class="btn btn-secondary btn-sm" onclick="clearSearch()">Очистити</button>
+<body>
+  <!-- Фіксований навігаційний бар зверху -->
+  <nav class="navbar fixed-top">
+    <div class="nav-container">
+      <button class="nav-btn" data-page="home">Головна</button>
+      <button class="nav-btn" data-page="analyze">Розбір слова</button>
+      <button class="nav-btn" data-page="search">Пошук за символом</button>
+      <span class="nav-divider">Інші роботи</span>
+      <a href="https://meweryk.github.io/Wave-of-land/index.html" class="nav-link-external" target="_blank">Частоти планет</a>
+      <a href="https://meweryk.github.io/word-torsion/" class="nav-link-external" target="_blank">Торсійний контраст тексту</a>
+      <a href="https://meweryk.github.io/Wave-of-land/spectr.html" class="nav-link-external" target="_blank">Частоти тризвуків</a>
+      <a href="https://meweryk.github.io/midi/index.html" class="nav-link-external" target="_blank">Двоканальний генератор частот</a>
+      <a href="https://meweryk.github.io/atlas_Ledneva/" class="nav-link-external" target="_blank">Атлас акупунктури</a>
     </div>
-    <div id="searchResults" class="mt-3"></div>
-  </div>
-  
-  <div id="categoryButtons" class="category-panel mb-3">
-    <button class="category-btn btn-sm" onclick="selectCategory('letters', this)">Літери</button>
-    <button class="category-btn btn-sm" onclick="selectCategory('izvody', this)">Ізводи</button>
-    <button class="category-btn btn-sm" onclick="selectCategory('sanskrit', this)">Санскрит</button>
-    <button class="category-btn btn-sm" onclick="selectCategory('numbers', this)">Числа</button>
-    <button class="category-btn btn-sm" onclick="selectCategory('runes', this)">Руни</button>
-  </div>
-  
-  <div id="symbolList"></div>
-  <div id="mainSection"></div>
-  <div id="output"></div>
-  
-  <hr>
-  <div class="section">
-    <div class="d-flex align-items-center">
-      <h4>Розбір слова</h4>
-      <button id="symbolsToggle" class="btn btn-outline-primary symbols-toggle-btn btn-sm" onclick="toggleSymbolKeyboard()">Клавіатура</button>
+  </nav>
+
+  <!-- Основний контент -->
+  <main class="main-content">
+    <!-- Сторінка Головна (каталог) -->
+    <div id="homePage" class="page-container active-page">
+      <div class="category-panel mb-3">
+        <button class="category-btn btn-sm" onclick="selectCategory('letters', this)">Літери</button>
+        <button class="category-btn btn-sm" onclick="selectCategory('izvody', this)">Ізводи</button>
+        <button class="category-btn btn-sm" onclick="selectCategory('sanskrit', this)">Санскрит</button>
+        <button class="category-btn btn-sm" onclick="selectCategory('numbers', this)">Числа</button>
+        <button class="category-btn btn-sm" onclick="selectCategory('runes', this)">Руни</button>
+      </div>
+      <div id="symbolList"></div>
+      <div id="mainSection"></div>
+      <div id="output" style="display:none;"></div>
+      <div class="mt-3">
+        <button class="btn btn-success btn-sm me-2" onclick="exportCSV()">Експорт у CSV</button>
+        <button id="importCsvBtn" class="btn btn-secondary btn-sm">Імпорт CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+      </div>
     </div>
-    
-    <div id="symbolKeyboard" class="symbol-keyboard"></div>
-    
-    <div class="input-group mb-2">
-      <input id="wordInput" type="text" placeholder="Введіть слово" class="form-control" />
-      <button class="btn btn-primary btn-sm" onclick="analyzeWord()">Відати</button>
+
+    <!-- Сторінка Розбір слова -->
+    <div id="analyzePage" class="page-container">
+      <div class="section">
+        <div class="d-flex align-items-center mb-2">
+          <h4 class="mb-0">Розбір слова</h4>
+          <button id="symbolsToggle" class="btn btn-outline-primary symbols-toggle-btn btn-sm ms-2" onclick="toggleSymbolKeyboard()">Клавіатура</button>
+        </div>
+        <div id="symbolKeyboard" class="symbol-keyboard"></div>
+        <div class="input-group mb-2">
+          <input id="wordInput" type="text" placeholder="Введіть слово" class="form-control" />
+          <button class="btn btn-primary btn-sm" onclick="analyzeWord()">Відати</button>
+        </div>
+        <ul class="nav nav-tabs analysis-tabs mb-3" id="analysisTabs">
+          <li class="nav-item">
+            <a class="nav-link active" onclick="switchAnalysis('letters')">За літерами</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" onclick="switchAnalysis('numbers')">За числами</a>
+          </li>
+        </ul>
+        <div id="wordAnalysis"></div>
+      </div>
     </div>
-    
-    <ul class="nav nav-tabs analysis-tabs mb-3" id="analysisTabs">
-      <li class="nav-item">
-        <a class="nav-link active" onclick="switchAnalysis('letters')">За літерами</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" onclick="switchAnalysis('numbers')">За числами</a>
-      </li>
-    </ul>
-    
-    <div id="wordAnalysis"></div>
-  </div>
-  
-  <div class="mt-3">
-    <button class="btn btn-success btn-sm me-2" onclick="exportCSV()">Експорт у CSV</button>
-    <button id="importCsvBtn" class="btn btn-secondary btn-sm">Імпорт CSV</button>
-    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
-  </div>
-  
+
+    <!-- Сторінка Пошук за символом -->
+    <div id="searchPage" class="page-container">
+      <div class="section">
+        <h4>Пошук за символом</h4>
+        <div class="input-group">
+          <input id="searchInput" type="text" class="form-control" placeholder="Введіть символ або властивість">
+          <button class="btn btn-primary btn-sm" onclick="searchSymbol()">Знайти</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearSearch()">Очистити</button>
+        </div>
+        <div id="searchResults" class="mt-3"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Фіксований футер знизу (тільки автор) -->
+  <footer class="fixed-footer">
+    <div class="copyright">© Автор</div>
+  </footer>
+
   <div id="noResultsAlert" class="no-results-alert">У базі немає відповідностей</div>
   <div id="toastMessage" class="toast-message"></div>
-  
-  <p></p>
-  <div class="text-center my-4">
-    <hr class="w-25 d-inline-block">
-    <span class="px-2">Інші роботи автора</span>
-    <hr class="w-25 d-inline-block">
-  </div>
-  
-  <div class="text-center">
-    <button class="btn btn-outline-primary btn-sm" onclick="window.location.href = 'https://meweryk.github.io/Wave-of-land/index.html';">Частоти планет</button><br>
-  </div>
-  <div class="text-center">
-    <button class="btn btn-outline-primary btn-sm" onclick="window.location.href = 'https://meweryk.github.io/word-torsion/';">Торсійний контраст тексту</button><br>
-  </div>
-  <div class="text-center">
-    <button class="btn btn-outline-primary btn-sm" onclick="window.location.href = 'https://meweryk.github.io/Wave-of-land/spectr.html';">Частоти тризвуків</button><br>
-  </div>
-  <div class="text-center">
-    <button class="btn btn-outline-primary btn-sm" onclick="window.location.href = 'https://meweryk.github.io/midi/index.html';">Двоканальний генератор частот</button><br>
-  </div>
-  
-  <hr>
-  <p class="text-center">© Автор</p>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  
   <script src="./script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

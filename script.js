@@ -10,6 +10,7 @@ let activeButton = null;
 let currentSymbolInput = null;
 let currentAnalysisMode = 'letters';
 let symbolKeyboardVisible = false;
+let currentNavPage = 'home';
 
 const APP_VERSION = "1.0.0";
 
@@ -429,7 +430,6 @@ function selectCategory(cat, btn) {
 function showOutput(data) {
   const output = document.getElementById('output');
   output.textContent = JSON.stringify(data, null, 2);
-  // output залишається прихованим через CSS
 }
 
 function exportCSV() {
@@ -489,36 +489,87 @@ function importCSV(file) {
   reader.readAsText(file);
 }
 
+// ФУНКЦІЯ ПОШУКУ
 function searchSymbol() {
   const searchInput = document.getElementById('searchInput').value.trim();
   const searchInputLower = searchInput.toLowerCase();
   const resultsContainer = document.getElementById('searchResults');
   resultsContainer.innerHTML = '';
   if (!searchInput) return;
+  
   const searchResults = [];
   for (const [category, symbols] of Object.entries(db)) {
     for (const [symbol, data] of Object.entries(symbols)) {
       const symbolLower = symbol.toLowerCase();
       let found = false;
+      let matchedProperties = [];
+      
+      // Пошук за символом
       if (symbolLower === searchInputLower) {
-        searchResults.push(data);
+        searchResults.push({
+          symbol: symbol,
+          data: data,
+          category: category,
+          matchedText: symbol,
+          matchType: 'symbol'
+        });
         found = true;
       }
+      
+      // Пошук у властивостях
       if (!found && searchInput.length > 1 && data.свойства) {
-        const foundInProps = data.свойства.some(prop => 
-          prop.toLowerCase().includes(searchInputLower)
-        );
-        if (foundInProps) {
-          searchResults.push(data);
+        data.свойства.forEach(prop => {
+          const propLower = prop.toLowerCase();
+          if (propLower.includes(searchInputLower)) {
+            matchedProperties.push(prop);
+          }
+        });
+        if (matchedProperties.length > 0) {
+          searchResults.push({
+            symbol: symbol,
+            data: data,
+            category: category,
+            matchedProperties: matchedProperties,
+            matchType: 'properties'
+          });
         }
       }
     }
   }
+  
   if (searchResults.length > 0) {
     searchResults.forEach(item => {
       const resultDiv = document.createElement('div');
       resultDiv.className = 'search-result-item';
-      resultDiv.innerHTML = `<strong>${item.имя}</strong> - ${item.свойства?.join(', ') || 'немає властивостей'}`;
+      
+      const symbolDisplay = item.symbol;
+      const categoryDisplay = item.category;
+      
+      // Функція для підсвічування тексту
+      function highlightText(text, searchTerm) {
+        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+      }
+      
+      let propertiesHtml = '';
+      if (item.matchType === 'symbol') {
+        // Підсвічуємо символ
+        const highlightedSymbol = highlightText(symbolDisplay, searchInput);
+        propertiesHtml = item.data.свойства?.join(', ') || 'немає властивостей';
+        resultDiv.innerHTML = `<strong>${highlightedSymbol}</strong> <span class="text-muted">(${categoryDisplay})</span>: ${propertiesHtml}`;
+      } else {
+        // Підсвічуємо знайдені властивості
+        const allProperties = item.data.свойства || [];
+        const highlightedProps = allProperties.map(prop => {
+          if (item.matchedProperties.includes(prop)) {
+            return highlightText(prop, searchInput);
+          }
+          return prop;
+        }).join(', ');
+        
+        resultDiv.innerHTML = `<strong>${symbolDisplay}</strong> <span class="text-muted">(${categoryDisplay})</span>: ${highlightedProps}`;
+      }
+      
       resultsContainer.appendChild(resultDiv);
     });
     resultsContainer.classList.add('show');
@@ -537,7 +588,27 @@ function clearSearch() {
   document.getElementById('searchResults').classList.remove('show');
 }
 
-// Ініціалізація бази з sings.json
+// Функція перемикання сторінок
+function switchPage(pageId) {
+  document.querySelectorAll('.page-container').forEach(page => {
+    page.classList.remove('active-page');
+  });
+  const activePage = document.getElementById(`${pageId}Page`);
+  if (activePage) {
+    activePage.classList.add('active-page');
+  }
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('data-page') === pageId) {
+      btn.classList.add('active');
+    }
+  });
+  currentNavPage = pageId;
+  if (pageId === 'analyze' && document.getElementById('wordInput').value.trim()) {
+    analyzeWord();
+  }
+}
+
 async function initDatabase() {
   const savedVersion = localStorage.getItem('appVersion');
   if (savedVersion !== APP_VERSION) {
@@ -559,10 +630,8 @@ function mergeWithBase(baseData) {
     if (!db[category]) db[category] = {};
     for (const [sym, baseItem] of Object.entries(symbols)) {
       if (!db[category][sym]) {
-        // Нового символу немає – додаємо повністю
         db[category][sym] = { ...baseItem };
       } else {
-        // Символ існує – об'єднуємо властивості
         const existing = db[category][sym];
         if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
           if (!existing.свойства) existing.свойства = [];
@@ -572,21 +641,29 @@ function mergeWithBase(baseData) {
             }
           });
         }
-        // Інші поля не перезаписуємо (номер, число, вимова, транскрипція)
       }
     }
   }
   saveDB();
 }
 
-// Налаштування кастомного імпорту CSV
+// Ініціалізація
 document.addEventListener('DOMContentLoaded', () => {
   const importBtn = document.getElementById('importCsvBtn');
   const fileInput = document.getElementById('csvFileInput');
-  importBtn.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length) importCSV(e.target.files[0]);
-    fileInput.value = '';
+  if (importBtn && fileInput) {
+    importBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) importCSV(e.target.files[0]);
+      fileInput.value = '';
+    });
+  }
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pageId = btn.getAttribute('data-page');
+      if (pageId) switchPage(pageId);
+    });
   });
   initDatabase();
+  switchPage('home');
 });
