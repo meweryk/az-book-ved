@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.1.2'; // Збільште при зміні статичних файлів!
+const CACHE_VERSION = 'v1.1.3'; // Збільште при зміні статичних файлів!
 const STATIC_CACHE_NAME = `az-book-static-${CACHE_VERSION}`;
 const IMAGES_CACHE_NAME = `az-book-images-${CACHE_VERSION}`;
 const DATA_CACHE_NAME = `az-book-data-${CACHE_VERSION}`;
@@ -127,7 +127,7 @@ self.addEventListener('fetch', event => {
       }).catch(() => {
         // Якщо мережа недоступна – повертаємо головну сторінку як fallback
         console.log('[SW] Мережа недоступна, повертаємо index.html з кешу');
-        return caches.match('/az-book-ved/index.html');
+        return caches.match(FALLBACK_HTML);
       });
     })
   );
