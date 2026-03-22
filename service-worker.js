@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.5'; // збільшуйте при зміні статичних файлів
+const CACHE_VERSION = 'v1.0.6'; // збільшуйте при зміні статичних файлів
 const STATIC_CACHE_NAME = `az-book-static-${CACHE_VERSION}`;
 const IMAGES_CACHE_NAME = `az-book-images-${CACHE_VERSION}`;
 const DATA_CACHE_NAME = `az-book-data-${CACHE_VERSION}`;
@@ -16,6 +16,8 @@ const STATIC_URLS = [
   '/az-book-ved/sings.json',
   '/az-book-ved/icon-192.png',
   '/az-book-ved/icon-512.png',
+  '/az-book-ved/footer.png',
+  '/az-book-ved/sokol.png',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js'
 ];

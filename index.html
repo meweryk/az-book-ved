@@ -15,7 +15,12 @@
   <!-- Фіксований навігаційний бар зверху -->
   <nav class="navbar fixed-top">
     <div class="navbar-inner">
-      <span class="navbar-title">Книга знаків</span>
+      <div class="navbar-left">
+        <a href="./sokol.png" class="navbar-logo-link">
+          <img src="./sokol.png" alt="sokol" class="navbar-logo">
+        </a>
+        <span class="navbar-title">Книга знаків</span>
+      </div>
       <button class="menu-toggle" id="menuToggle" aria-label="Меню">
         <i class="bi bi-list"></i>
       </button>
@@ -101,8 +106,12 @@
 
   <!-- Фіксований футер -->
   <footer class="fixed-footer">
-    <div class="copyright">© Автор</div>
-  </footer>
+  <div class="copyright">
+    <a href="./footer.png" class="footer-image-link">
+      <img src="./footer.png" alt="mainSectionweryk" class="footer-image">
+    </a>
+  </div>
+</footer>
 
   <div id="noResultsAlert" class="no-results-alert">У базі немає відповідностей</div>
   <div id="toastMessage" class="toast-message"></div>

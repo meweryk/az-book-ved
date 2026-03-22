@@ -52,11 +52,11 @@ body {
   border-radius: 4px;
 }
 
-/* Контейнер меню (виїжджає зліва) */
+/* Меню з правого боку */
 .nav-container {
   position: fixed;
   top: 0;
-  left: -300px; /* приховано */
+  right: -300px; /* замість left: -300px */
   width: 300px;
   height: 100vh;
   background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
@@ -65,16 +65,21 @@ body {
   justify-content: flex-start;
   padding: 70px 16px 20px;
   gap: 4px;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
-  transition: left 0.3s ease;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); /* тінь зліва */
+  transition: right 0.3s ease; /* анімація для right */
   z-index: 1000;
-  border-right: 1px solid #a5d6a7;
+  border-left: 1px solid #a5d6a7; /* обідок зліва */
   overflow-y: auto;
-  display: flex; /* забезпечує вертикальне розташування */
+  display: flex;
 }
 
 .nav-container.open {
-  left: 0;
+  right: 0;
+}
+
+/* Кнопка стирання на клавіатурі – чорний символ */
+.symbol-keyboard-btn {
+  color: #000 !important; /* перебиває btn-danger */
 }
 
 /* Стилі кнопок у меню */
@@ -492,4 +497,45 @@ strong {
   .menu-toggle {
     font-size: 1.4rem;
   }
+}
+
+/* Логотип у навбарі */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-logo-link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar-logo {
+  max-height: 48px;          /* 80% висоти навбара */
+  width: auto;
+  object-fit: contain;
+}
+
+/* Зображення у футері */
+.fixed-footer .copyright {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footer-image-link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.footer-image {
+  max-height: 36px;         /* фіксована висота, щоб не розтягувало */
+  width: auto;
+  vertical-align: middle;
+  object-fit: cover;
 }
