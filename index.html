@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Каталог Знаков</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    .section { margin-bottom: 1rem; }
+    .property-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .category-panel { display: flex; flex-wrap: nowrap; width: 100%; }
+    .category-btn {
+      flex: 1; border-radius: 0; margin: 0; border: 1px solid #fff;
+      font-size: 0.9rem; padding: 0.6rem; background-color: #e9ecef;
+      transition: background-color 0.3s ease;
+    }
+    .category-btn.active { background-color: #0d6efd; color: white; }
+    #symbolList {
+      background-color: #e6ffe6; padding: 0.5rem 1rem; border: 1px solid #c0eac0;
+      border-radius: 5px; margin-bottom: 1rem; font-size: 1rem;
+    }
+    #output, #wordAnalysis, #searchResults {
+      white-space: pre-wrap;
+      background: #f8f9fa; padding: 1rem; border: 1px solid #dee2e6;
+      margin-top: 1rem; opacity: 0; transition: opacity 1s ease;
+    }
+    #output.show, #wordAnalysis.show, #searchResults.show { opacity: 1; }
+    .btn-row { display: flex; gap: 1rem; margin-top: 1rem; }
+    strong { font-weight: bold; }
+    .symbol-btn {
+      cursor: pointer; margin: 0 3px; padding: 2px 5px;
+      border-radius: 3px; background: #d1ecf1; display: inline-block;
+    }
+    .symbol-btn:hover { background: #bee5eb; }
+    .search-result-item { margin-bottom: 0.5rem; }
+    .no-results-alert {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 10px 20px; background: #ffcccc; border: 1px solid #ff9999;
+      border-radius: 5px; z-index: 1000; opacity: 0; transition: opacity 0.5s;
+    }
+    .no-results-alert.show { opacity: 1; }
+    .symbols-row {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px;
+      justify-content: flex-start;
+    }
+    .symbol-item {
+      width: calc(14.28% - 5px); /* 100% / 7 */
+      text-align: center; padding: 3px; box-sizing: border-box;
+    }
+    .analysis-tabs .nav-link { cursor: pointer; }
+    .analysis-step { margin-bottom: 0.5rem; }
+    .interpretation { 
+      background-color: #e0f7fa; padding: 0.5rem; 
+      border-left: 4px solid #00bcd4; margin-top: 0.5rem;
+    }
+    .sum-highlight { font-weight: bold; color: #d32f2f; }
+    .symbol-keyboard {
+      background-color: #f0f0f0; padding: 10px; border-radius: 5px;
+      margin-bottom: 10px; display: none;
+      max-width: 100%; /* Не выходить за пределы экрана */
+      overflow-x: auto; /* Горизонтальный скрол при необходимости */
+    }
+    .symbol-keyboard-btn {
+      min-width: 28px; /* Уменьшенный размер */
+      height: 28px; /* Уменьшенный размер */
+      margin: 2px; /* Минимальное расстояние */
+      font-size: 0.9rem; /* Уменьшенный размер шрифта */
+      border: 1px solid #ccc; border-radius: 4px; background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .symbol-keyboard-btn:hover {
+      background-color: #e0e0e0;
+    }
+    .symbol-keyboard-row {
+      display: flex; justify-content: center; margin-bottom: 5px;
+      flex-wrap: nowrap; /* Не переносить на новую строку */
+    }
+    .symbols-toggle-btn {
+      margin-left: 10px;
+    }
+    .symbols-toggle-btn.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .special-btn {
+      color: #666; /* Серый цвет */
+      font-size: 0.8rem; /* Уменьшенный размер шрифта */
+    }
+  </style>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="container py-4">
+  <h1 class="mb-4">Каталог Знаков</h1>
+  
+  <!-- Поиск по символу -->
+  <div class="section mb-4">
+    <h4>Поиск по символу</h4>
+    <div class="input-group">
+      <input id="searchInput" type="text" class="form-control" placeholder="Введите символ или свойство">
+      <button class="btn btn-primary" onclick="searchSymbol()">Найти</button>
+      <button class="btn btn-secondary" onclick="clearSearch()">Очистить</button>
+    </div>
+    <div id="searchResults" class="mt-3"></div>
+  </div>
+
+  <div id="categoryButtons" class="category-panel mb-3">
+    <button class="category-btn" onclick="selectCategory('letters', this)">Буквы</button>
+    <button class="category-btn" onclick="selectCategory('izvody', this)">Изводы</button>
+    <button class="category-btn" onclick="selectCategory('sanskrit', this)">Санскрит</button>
+    <button class="category-btn" onclick="selectCategory('numbers', this)">Числа</button>
+    <button class="category-btn" onclick="selectCategory('runes', this)">Руны</button>
+  </div>
+
+  <div id="symbolList"></div>
+  <div id="mainSection"></div>
+  <div id="output"></div>
+
+  <hr>
+  <div class="section">
+    <div class="d-flex align-items-center">
+      <h4>Разбор слова</h4>
+      <button id="symbolsToggle" class="btn btn-outline-primary symbols-toggle-btn" onclick="toggleSymbolKeyboard()">Символы</button>
+    </div>
+    
+    <!-- Виртуальная клавиатура -->
+    <div id="symbolKeyboard" class="symbol-keyboard"></div>
+    
+    <div class="input-group mb-2">
+      <input id="wordInput" type="text" placeholder="Введите слово" class="form-control"/>
+      <button class="btn btn-primary" onclick="analyzeWord()">Изведать</button>
+    </div>
+    
+    <!-- Табы для выбора типа анализа -->
+    <ul class="nav nav-tabs analysis-tabs mb-3" id="analysisTabs">
+      <li class="nav-item">
+        <a class="nav-link active" onclick="switchAnalysis('letters')">По буквам</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="switchAnalysis('numbers')">По числам</a>
+      </li>
+    </ul>
+    
+    <div id="wordAnalysis"></div>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-success me-2" onclick="exportCSV()">Экспорт в CSV</button>
+    <input type="file" accept=".csv" onchange="importCSV(event)" class="form-control-file d-inline-block w-auto">
+  </div>
+
+  <div id="noResultsAlert" class="no-results-alert">В базе нет соответствий</div>
+
+  <p></p>
+  <div class="text-center my-4">
+  <hr class="w-25 d-inline-block">
+  <span class="px-2">Другие работы автора</span>
+  <hr class="w-25 d-inline-block">
+  </div>
+
+  <div class="text-center">
+  <button class="btn btn-outline-primary" onclick="window.location.href = 'https://meweryk.github.io/Wave-of-land/index.html';">Частоты планет</button><br>
+  </div>
+  
+  <div class="text-center">
+  <button class="btn btn-outline-primary" onclick="window.location.href = 'https://meweryk.github.io/word-torsion/';">Торсионный контраст текста</button><br>
+  </div>
+  
+  <div class="text-center">
+  <button class="btn btn-outline-primary" onclick="window.location.href = 'https://meweryk.github.io/Wave-of-land/spectr.html';">Частоты трезвучий</button><br>
+  </div>
+  
+  <div class="text-center">
+  <button class="btn btn-outline-primary" onclick="window.location.href = 'https://meweryk.github.io/midi/index.html';">Двухканальный генератор частот</button><br>
+  </div>
+  
+  <hr>
+  <p class="text-center">© Автор</p>
+    
+  <script>
+    let db;
+    try {
+      db = JSON.parse(localStorage.getItem('symbolDB')) || {};
+    } catch (e) {
+      db = {};
+    }
+
+    let activeCategory = null;
+    let activeButton = null;
+    let currentSymbolInput = null;
+    let currentAnalysisMode = 'letters'; // 'letters' или 'numbers'
+    let symbolKeyboardVisible = false;
+
+    // Толкования для особых чисел
+    const numberInterpretations = {
+      1: "Абсолют → А (1)",
+      3: "Троичность → Г (3)",
+      7: "Божеств. мудрость → З (7)",
+      9: "Цикл завершения → Ѳ (9), Ч (90→9)",
+      40: "Испытание → М (40)",
+      60: "Просветление → Ѯ (60)",
+      70: "Защита → О (70)",
+      100: "Творение → Р (100)",
+      200: "Энергия → С (200)",
+      300: "Закон → Т (300)",
+      400: "Мировые врата → У (400), Ѵ (400)",
+      500: "Чистота → Ф (500)",
+      600: "Баланс → Х (600)",
+      700: "Тайное знание → Ѱ (700)",
+      800: "Вечность → Ѡ (800)",
+      900: "Совершенство → Ц (900), Ѧ (900)",
+      108: "Полнота божественной истины",
+      144: "Гармония рода и света",
+      222: "Дуальность материи и духа",
+      507: "Троичность просветления"
+    };
+
+    // Функция для переключения виртуальной клавиатуры
+    function toggleSymbolKeyboard() {
+      const toggleBtn = document.getElementById('symbolsToggle');
+      const keyboard = document.getElementById('symbolKeyboard');
+      
+      symbolKeyboardVisible = !symbolKeyboardVisible;
+      
+      if (symbolKeyboardVisible) {
+        toggleBtn.classList.add('active');
+        keyboard.style.display = 'block';
+        createSymbolKeyboard();
+      } else {
+        toggleBtn.classList.remove('active');
+        keyboard.style.display = 'none';
+      }
+    }
+
+    // Функция для создания виртуальной клавиатуры
+    function createSymbolKeyboard() {
+      const keyboard = document.getElementById('symbolKeyboard');
+      keyboard.innerHTML = '';
+      
+      const letters = db['letters'] || {};
+      if (Object.keys(letters).length === 0) {
+        keyboard.innerHTML = '<p>Нет символов в базе</p>';
+        return;
+      }
+      
+      // Преобразуем в массив объектов {символ, номер}
+      const symbolData = Object.keys(letters).map(sym => {
+        return {
+          symbol: sym,
+          number: parseInt(letters[sym].номер) || 0
+        };
+      });
+      
+      // Сортируем по порядковому номеру
+      symbolData.sort((a, b) => a.number - b.number);
+      
+      // Создаем строки по 12 символов для лучшего заполнения
+      const groupSize = 12;
+      for (let i = 0; i < symbolData.length; i += groupSize) {
+        const group = symbolData.slice(i, i + groupSize);
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'symbol-keyboard-row';
+        
+        group.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = 'symbol-keyboard-btn';
+          btn.textContent = item.symbol;
+          btn.title = `Номер: ${item.number}`;
+          btn.onclick = () => {
+            const wordInput = document.getElementById('wordInput');
+            wordInput.value += item.symbol;
+          };
+          rowDiv.appendChild(btn);
+        });
+        
+        keyboard.appendChild(rowDiv);
+      }
+      
+      // Добавляем кнопку удаления
+      const delRowDiv = document.createElement('div');
+      delRowDiv.className = 'symbol-keyboard-row';
+      
+      const backspaceBtn = document.createElement('button');
+      backspaceBtn.className = 'btn btn-danger symbol-keyboard-btn';
+      backspaceBtn.textContent = '⌫';
+      backspaceBtn.onclick = () => {
+        const wordInput = document.getElementById('wordInput');
+        wordInput.value = wordInput.value.slice(0, -1);
+      };
+      delRowDiv.appendChild(backspaceBtn);
+      
+      const spaceBtn = document.createElement('button');
+      spaceBtn.className = 'btn btn-secondary symbol-keyboard-btn special-btn';
+      spaceBtn.textContent = 'Пробел';
+      spaceBtn.style.width = '80px';
+      spaceBtn.onclick = () => {
+        const wordInput = document.getElementById('wordInput');
+        wordInput.value += ' ';
+      };
+      delRowDiv.appendChild(spaceBtn);
+      
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'btn btn-warning symbol-keyboard-btn special-btn';
+      clearBtn.textContent = 'Очистить';
+      clearBtn.style.width = '80px';
+      clearBtn.onclick = () => {
+        document.getElementById('wordInput').value = '';
+      };
+      delRowDiv.appendChild(clearBtn);
+      
+      keyboard.appendChild(delRowDiv);
+    }
+
+    // Функция для переключения режима анализа
+    function switchAnalysis(mode) {
+      currentAnalysisMode = mode;
+      document.querySelectorAll('#analysisTabs .nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      analyzeWord();
+    }
+
+    // Функция для поиска символа в базе без учета регистра
+    function findSymbolIgnoreCase(category, symbol) {
+      if (!db[category]) return null;
+      
+      const symbolLower = symbol.toLowerCase();
+      for (const key of Object.keys(db[category])) {
+        if (key.toLowerCase() === symbolLower) {
+          return { key, data: db[category][key] };
+        }
+      }
+      return null;
+    }
+
+    function saveDB() {
+      localStorage.setItem('symbolDB', JSON.stringify(db));
+    }
+
+    function selectCategory(cat, btn) {
+      if (activeCategory === cat) {
+        activeCategory = null;
+        if (activeButton) activeButton.classList.remove('active');
+        activeButton = null;
+        document.getElementById('mainSection').innerHTML = '';
+        document.getElementById('symbolList').textContent = '';
+        return;
+      }
+
+      if (activeButton) activeButton.classList.remove('active');
+      activeCategory = cat;
+      activeButton = btn;
+      btn.classList.add('active');
+
+      const section = document.getElementById('mainSection');
+      section.innerHTML = '';
+
+      const container = document.createElement('div');
+
+      // Создаем список символов
+      const symbolListContainer = document.getElementById('symbolList');
+      symbolListContainer.innerHTML = '';
+      
+      const symbols = db[cat] ? Object.keys(db[cat]).filter(k => k) : [];
+      
+      if (symbols.length > 0) {
+        const title = document.createElement('div');
+        title.innerHTML = '<strong>Символы:</strong>';
+        symbolListContainer.appendChild(title);
+        
+        // Для категории "letters" сортируем по порядковому номеру и выводим по 7 в строку
+        if (cat === 'letters') {
+          // Преобразуем в массив объектов {символ, номер}
+          const symbolData = symbols.map(sym => {
+            return {
+              symbol: sym,
+              number: parseInt(db[cat][sym].номер) || 0
+            };
+          });
+          
+          // Сортируем по порядковому номеру
+          symbolData.sort((a, b) => a.number - b.number);
+          
+          // Группируем по 7 символов в строку
+          const groupSize = 7;
+          for (let i = 0; i < symbolData.length; i += groupSize) {
+            const group = symbolData.slice(i, i + groupSize);
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'symbols-row';
+            
+            group.forEach(item => {
+              const symbolDiv = document.createElement('div');
+              symbolDiv.className = 'symbol-item';
+              
+              const btn = document.createElement('span');
+              btn.className = 'symbol-btn';
+              btn.textContent = item.symbol;
+              btn.title = `Номер: ${item.number}`;
+              btn.onclick = () => {
+                if (currentSymbolInput) {
+                  currentSymbolInput.value = item.symbol;
+                  const event = new Event('input', { bubbles: true });
+                  currentSymbolInput.dispatchEvent(event);
+                }
+              };
+              
+              symbolDiv.appendChild(btn);
+              rowDiv.appendChild(symbolDiv);
+            });
+            
+            symbolListContainer.appendChild(rowDiv);
+          }
+        } 
+        // Для остальных категорий - алфавитный порядок
+        else {
+          // Сортируем символы в алфавитном порядке
+          symbols.sort();
+          
+          symbols.forEach(sym => {
+            const btn = document.createElement('span');
+            btn.className = 'symbol-btn';
+            btn.textContent = sym;
+            btn.onclick = () => {
+              if (currentSymbolInput) {
+                currentSymbolInput.value = sym;
+                const event = new Event('input', { bubbles: true });
+                currentSymbolInput.dispatchEvent(event);
+              }
+            };
+            symbolListContainer.appendChild(btn);
+          });
+        }
+      } else {
+        symbolListContainer.textContent = 'Нет символов в категории.';
+      }
+
+      const form = document.createElement('div');
+      form.className = 'section';
+
+      const symbol = document.createElement('input');
+      symbol.placeholder = 'Символ';
+      symbol.className = 'form-control mb-2';
+      currentSymbolInput = symbol; // Сохраняем ссылку на текущее поле
+
+      const number = document.createElement('input');
+      number.placeholder = 'Порядковый номер';
+      number.className = 'form-control mb-2';
+
+      const value = document.createElement('input');
+      value.placeholder = 'Число';
+      value.className = 'form-control mb-2';
+
+      const pron = document.createElement('input');
+      pron.placeholder = 'Произношение';
+      pron.className = 'form-control mb-2';
+
+      const trans = document.createElement('input');
+      trans.placeholder = 'Транскрипция';
+      trans.className = 'form-control mb-2';
+
+      const properties = document.createElement('div');
+      const propInput = document.createElement('input');
+      propInput.placeholder = 'Добавить свойство';
+      propInput.className = 'form-control d-inline-block w-75';
+      const addPropBtn = document.createElement('button');
+      addPropBtn.innerText = '+';
+      addPropBtn.className = 'btn btn-secondary';
+      const props = [];
+
+      addPropBtn.onclick = () => {
+        const val = propInput.value.trim();
+        if (val && !props.includes(val)) {
+          props.push(val);
+          renderProps();
+        }
+        propInput.value = '';
+      };
+
+      const renderProps = () => {
+        properties.innerHTML = '<strong>Свойства:</strong><ul>' + props.map(p => `<li>${p}</li>`).join('') + '</ul>';
+      };
+
+      const row = document.createElement('div');
+      row.className = 'property-input';
+      row.append(propInput, addPropBtn);
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btn-row';
+
+      const submit = document.createElement('button');
+      submit.innerText = 'Сохранить';
+      submit.className = 'btn btn-success';
+      submit.onclick = () => {
+        let sym = symbol.value.trim();
+        
+        // Преобразуем символ в верхний регистр для одиночных символов в определенных категориях
+        if (['letters', 'sanskrit', 'runes'].includes(cat) && sym.length === 1) {
+          sym = sym.toUpperCase();
+        }
+        
+        if (!sym && cat !== 'numbers') return;
+        
+        // Проверка существования символа без учета регистра
+        const existing = findSymbolIgnoreCase(cat, sym);
+        if (existing && existing.key !== sym) {
+          // Удаляем старую версию с другим регистром
+          delete db[cat][existing.key];
+        }
+
+        const item = {
+          имя: sym,
+          категория: cat,
+          номер: number.value.trim(),
+          число: value.value.trim(),
+          свойства: [...props],
+          произношение: pron.value.trim(),
+          транскрипция: trans.value.trim(),
+        };
+        db[cat] = db[cat] || {};
+        db[cat][sym] = item;
+        saveDB();
+        showOutput(item);
+        selectCategory(cat, btn);
+      };
+
+      const delBtn = document.createElement('button');
+      delBtn.innerText = 'Удалить';
+      delBtn.className = 'btn btn-danger';
+      delBtn.onclick = () => {
+        const sym = symbol.value.trim();
+        if (sym) {
+          const existing = findSymbolIgnoreCase(cat, sym);
+          if (existing) {
+            delete db[cat][existing.key];
+            saveDB();
+            symbol.value = number.value = value.value = pron.value = trans.value = '';
+            props.length = 0;
+            renderProps();
+            showOutput({});
+            selectCategory(cat, btn);
+          }
+        }
+      };
+
+      btnRow.append(submit, delBtn);
+
+      symbol.oninput = () => {
+        const val = symbol.value.trim();
+        if (!val) {
+          number.value = value.value = pron.value = trans.value = '';
+          props.length = 0;
+          renderProps();
+          return;
+        }
+        
+        const existing = findSymbolIgnoreCase(cat, val);
+        if (existing) {
+          const item = existing.data;
+          symbol.value = existing.key; // Устанавливаем версию из базы
+          number.value = item.номер || '';
+          value.value = item.число || '';
+          pron.value = item.произношение || '';
+          trans.value = item.транскрипция || '';
+          props.length = 0;
+          item.свойства?.forEach(p => props.push(p));
+          renderProps();
+        } else {
+          number.value = value.value = pron.value = trans.value = '';
+          props.length = 0;
+          renderProps();
+        }
+      };
+
+      form.append(symbol, number, value);
+      if (cat === 'letters' || cat === 'sanskrit' || cat === 'runes') form.append(pron, trans);
+      form.append(row, properties, btnRow);
+      container.appendChild(form);
+      section.appendChild(container);
+    }
+
+    function showOutput(data) {
+      const output = document.getElementById('output');
+      output.textContent = JSON.stringify(data, null, 2);
+      output.classList.add('show');
+    }
+
+    // Функция для сведения числа к простому
+    function reduceToSingleDigit(num) {
+      const steps = [];
+      let current = num;
+      
+      while (current > 9) {
+        const digits = String(current).split('').map(Number);
+        const sum = digits.reduce((acc, val) => acc + val, 0);
+        steps.push({
+          expression: digits.join(' + '),
+          sum: sum,
+          interpretation: numberInterpretations[sum]
+        });
+        current = sum;
+      }
+      
+      return {
+        final: current,
+        steps: steps
+      };
+    }
+
+    // Функция для анализа слова по числам
+    function analyzeByNumbers(word) {
+      const letters = db['letters'] || {};
+      let total = 0;
+      const parts = [];
+      const validLetters = [];
+      
+      // Собираем числа для каждой буквы
+      for (const char of word) {
+        const symbolKey = Object.keys(letters).find(key => key.toLowerCase() === char);
+        const info = symbolKey ? letters[symbolKey] : null;
+        
+        if (info && info.число && parseInt(info.число) > 0) {
+          const num = parseInt(info.число);
+          total += num;
+          parts.push(`${symbolKey}(${num})`);
+          validLetters.push(symbolKey);
+        }
+      }
+      
+      if (parts.length === 0) {
+        return "Нет данных о числах для букв в этом слове";
+      }
+      
+      // Формируем результат
+      let result = `Разбор слова: ${word.toUpperCase()}\n\n`;
+      result += `Состав: ${validLetters.join('')}\n`;
+      result += `Вычисление: ${parts.join(' + ')} = <span class="sum-highlight">${total}</span>\n`;
+      
+      // Проверяем на особые числа
+      if (numberInterpretations[total]) {
+        result += `<div class="interpretation">${total}: ${numberInterpretations[total]}</div>\n`;
+      }
+      
+      // Сводим к простому числу
+      if (total > 9) {
+        result += "\nСведение к простому числу:\n";
+        
+        const reduction = reduceToSingleDigit(total);
+        let currentSum = total;
+        
+        for (const step of reduction.steps) {
+          result += `\n${step.expression} = <span class="sum-highlight">${step.sum}</span>`;
+          if (numberInterpretations[step.sum]) {
+            result += `\n<div class="interpretation">${step.sum}: ${numberInterpretations[step.sum]}</div>`;
+          }
+          currentSum = step.sum;
+        }
+        
+        result += `\n\nИтоговое число: <span class="sum-highlight">${reduction.final}</span>`;
+        if (numberInterpretations[reduction.final]) {
+          result += `\n<div class="interpretation">${reduction.final}: ${numberInterpretations[reduction.final]}</div>`;
+        }
+      }
+      
+      return result;
+    }
+
+    // Функция для анализа слова по буквам (существующая)
+    function analyzeByLetters(word) {
+      const result = [];
+      const letters = db['letters'] || {};
+      for (const char of word) {
+        // Поиск без учета регистра
+        const symbolKey = Object.keys(letters).find(key => key.toLowerCase() === char);
+        const info = symbolKey ? letters[symbolKey] : null;
+        
+        if (info) {
+          result.push(`${symbolKey}: ${info.свойства?.join(', ') || 'нет данных'}`);
+        } else {
+          result.push(`${char.toUpperCase()}: не найдено`);
+        }
+      }
+      return result.join('\n');
+    }
+
+    // Основная функция анализа слова
+    function analyzeWord() {
+      const word = document.getElementById('wordInput').value.trim().toLowerCase();
+      if (!word) return;
+      
+      let result;
+      if (currentAnalysisMode === 'numbers') {
+        result = analyzeByNumbers(word);
+      } else {
+        result = analyzeByLetters(word);
+      }
+      
+      const analysis = document.getElementById('wordAnalysis');
+      analysis.innerHTML = result;
+      analysis.classList.add('show');
+      
+      // Закрываем клавиатуру после анализа
+      if (symbolKeyboardVisible) {
+        toggleSymbolKeyboard();
+      }
+    }
+
+    function exportCSV() {
+      const rows = [["Категория", "Символ", "Номер", "Число", "Произношение", "Транскрипция", "Свойства"]];
+      for (const [cat, items] of Object.entries(db)) {
+        for (const [key, data] of Object.entries(items)) {
+          rows.push([
+            cat, key, data.номер || "", data.число || "",
+            data.произношение || "", data.транскрипция || "",
+            (data.свойства || []).join('; ')
+          ]);
+        }
+      }
+      const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "symbols.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const lines = e.target.result.split('\n').map(line => line.replace(/\r$/, ''));
+        const [header, ...rest] = lines;
+        for (const line of rest) {
+          if (!line.trim()) continue;
+          const [cat, sym, num, val, pron, trans, props] = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, ''));
+          if (!cat || !sym) continue;
+          
+          // Обработка регистра символа при импорте
+          let processedSym = sym;
+          if (['letters', 'sanskrit', 'runes'].includes(cat) && sym.length === 1) {
+            processedSym = sym.toUpperCase();
+          }
+          
+          // Проверка существования символа без учета регистра
+          const existing = findSymbolIgnoreCase(cat, processedSym);
+          if (existing) {
+            // Удаляем старую версию с другим регистром
+            delete db[cat][existing.key];
+          }
+          
+          db[cat] = db[cat] || {};
+          db[cat][processedSym] = {
+            имя: processedSym,
+            категория: cat,
+            номер: num,
+            число: val,
+            произношение: pron,
+            транскрипция: trans,
+            свойства: props.split(';').map(p => p.trim()).filter(Boolean)
+          };
+        }
+        saveDB();
+        alert("CSV импортирован успешно");
+      };
+      reader.readAsText(file);
+    }
+
+    // Функция поиска символов
+    function searchSymbol() {
+      const searchInput = document.getElementById('searchInput').value.trim();
+      const searchInputLower = searchInput.toLowerCase();
+      const resultsContainer = document.getElementById('searchResults');
+      resultsContainer.innerHTML = '';
+      
+      if (!searchInput) return;
+      
+      const searchResults = [];
+      
+      // Ищем по всем категориям
+      for (const [category, symbols] of Object.entries(db)) {
+        for (const [symbol, data] of Object.entries(symbols)) {
+          const symbolLower = symbol.toLowerCase();
+          let found = false;
+          
+          // Поиск по точному соответствию символа (для всех длин)
+          if (symbolLower === searchInputLower) {
+            searchResults.push(data);
+            found = true;
+          }
+          
+          // Если не нашли по символу и введено больше одного символа, ищем по свойствам
+          if (!found && searchInput.length > 1 && data.свойства) {
+            const foundInProps = data.свойства.some(prop => 
+              prop.toLowerCase().includes(searchInputLower)
+            );
+            if (foundInProps) {
+              searchResults.push(data);
+            }
+          }
+        }
+      }
+      
+      // Выводим результаты
+      if (searchResults.length > 0) {
+        searchResults.forEach(item => {
+          const resultDiv = document.createElement('div');
+          resultDiv.className = 'search-result-item';
+          resultDiv.innerHTML = `<strong>${item.имя}</strong> - ${item.свойства?.join(', ') || 'нет свойств'}`;
+          resultsContainer.appendChild(resultDiv);
+        });
+        resultsContainer.classList.add('show');
+      } else {
+        // Показываем сообщение об отсутствии результатов
+        const alert = document.getElementById('noResultsAlert');
+        alert.classList.add('show');
+        
+        // Скрываем сообщение через 5 секунд
+        setTimeout(() => {
+          alert.classList.remove('show');
+        }, 5000);
+      }
+    }
+    
+    // Функция очистки поиска
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchResults').innerHTML = '';
+      document.getElementById('searchResults').classList.remove('show');
+    }
+  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker registered:', reg))
+        .catch(err => console.error('Service Worker registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>
