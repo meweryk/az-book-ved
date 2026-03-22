@@ -1,7 +1,9 @@
-const CACHE_VERSION = 'v1.1.0'; // Збільште при зміні статичних файлів!
+const CACHE_VERSION = 'v1.1.1'; // Збільште при зміні статичних файлів!
 const STATIC_CACHE_NAME = `az-book-static-${CACHE_VERSION}`;
 const IMAGES_CACHE_NAME = `az-book-images-${CACHE_VERSION}`;
 const DATA_CACHE_NAME = `az-book-data-${CACHE_VERSION}`;
+
+const FALLBACK_HTML = '/az-book-ved/index.html';
 
 // Статичні ресурси (абсолютні шляхи від кореня сайту)
 const STATIC_URLS = [
