@@ -647,6 +647,76 @@ function mergeWithBase(baseData) {
   saveDB();
 }
 
+// Перевірка оновлень Service Worker
+function checkForUpdates() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.update();
+      
+      // Слухаємо повідомлення від Service Worker
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          console.log('[App] New version available:', event.data.version);
+          showUpdateNotification(event.data.version);
+        }
+      });
+    });
+    
+    // Перевіряємо чи є очікуючий Service Worker
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[App] Service Worker controller changed');
+      showToast('Оновлення застосовано');
+      // Необов'язково: перезавантажити сторінку
+      // window.location.reload();
+    });
+  }
+}
+
+// Показати сповіщення про оновлення
+function showUpdateNotification(version) {
+  // Створюємо кастомне сповіщення
+  const updateDiv = document.createElement('div');
+  updateDiv.className = 'update-notification';
+  updateDiv.innerHTML = `
+    <div class="update-notification-content">
+      <span>📦 Доступна нова версія (${version})</span>
+      <button onclick="applyUpdate()" class="btn btn-primary btn-sm">Оновити</button>
+      <button onclick="closeUpdateNotification()" class="btn btn-secondary btn-sm">Пізніше</button>
+    </div>
+  `;
+  document.body.appendChild(updateDiv);
+  setTimeout(() => {
+    updateDiv.classList.add('show');
+  }, 100);
+}
+
+function applyUpdate() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    });
+  }
+}
+
+function closeUpdateNotification() {
+  const notification = document.querySelector('.update-notification');
+  if (notification) {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }
+}
+
+// Періодична перевірка оновлень (кожні 30 хвилин)
+setInterval(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.update();
+    });
+  }
+}, 30 * 60 * 1000);
+
+
 // Ініціалізація
 document.addEventListener('DOMContentLoaded', () => {
   const importBtn = document.getElementById('importCsvBtn');
@@ -666,4 +736,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   initDatabase();
   switchPage('home');
+  // Перевірка оновлень
+  checkForUpdates();
 });
