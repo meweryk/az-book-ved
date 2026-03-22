@@ -1,9 +1,9 @@
-const CACHE_VERSION = 'v1.0.3'; // збільшуйте при зміні статичних файлів
+const CACHE_VERSION = 'v1.0.5'; // збільшуйте при зміні статичних файлів
 const STATIC_CACHE_NAME = `az-book-static-${CACHE_VERSION}`;
 const IMAGES_CACHE_NAME = `az-book-images-${CACHE_VERSION}`;
 const DATA_CACHE_NAME = `az-book-data-${CACHE_VERSION}`;
 
-const FALLBACK_HTML = '/atlas_Ledneva/index.html';
+const FALLBACK_HTML = '/az-book-ved/index.html';
 const FALLBACK_IMAGE = '/az-book-ved/icon-192.png';
 
 // Статичні ресурси (абсолютні шляхи від кореня сайту)

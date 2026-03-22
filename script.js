@@ -257,7 +257,7 @@ function selectCategory(cat, btn) {
     const title = document.createElement('div');
     title.innerHTML = '<strong>Символи:</strong>';
     symbolListContainer.appendChild(title);
-    if (cat === 'letters') {
+    if (cat === 'letters' || cat === 'energies') {
       const symbolData = symbols.map(sym => ({
         symbol: sym,
         number: parseInt(db[cat][sym].номер) || 0
@@ -421,7 +421,7 @@ function selectCategory(cat, btn) {
     }
   };
   form.append(symbol, number, value);
-  if (cat === 'letters' || cat === 'sanskrit' || cat === 'runes') form.append(pron, trans);
+  if (cat === 'letters' || cat === 'sanskrit' || cat === 'runes' || cat === 'energies') form.append(pron, trans);
   form.append(row, properties, btnRow);
   container.appendChild(form);
   section.appendChild(container);
