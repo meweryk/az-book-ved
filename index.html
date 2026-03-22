@@ -25,7 +25,7 @@
       <a href="https://meweryk.github.io/word-torsion/" class="nav-link-external" target="_blank">Торсійний контраст тексту</a>
       <a href="https://meweryk.github.io/Wave-of-land/spectr.html" class="nav-link-external" target="_blank">Частоти тризвуків</a>
       <a href="https://meweryk.github.io/midi/index.html" class="nav-link-external" target="_blank">Двоканальний генератор частот</a>
-      <a href="https://meweryk.github.io/atlas_Ledneva/" class="nav-link-external" target="_blank">Атлас акупунктури</a>-->
+      <a href="https://meweryk.github.io/atlas_Ledneva/" class="nav-link-external" target="_blank">Атлас акупунктури</a>
     </div>
   </nav>
   
@@ -34,7 +34,7 @@
 
   <!-- Основний контент -->
   <main class="main-content">
-    <!-- Сторінка Головна -->
+    <!-- Сторінка Головна (каталог) -->
     <div id="homePage" class="page-container active-page">
       <div class="category-panel mb-3">
         <button class="category-btn btn-sm" onclick="selectCategory('letters', this)">Літери</button>
@@ -102,23 +102,63 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./script.js"></script>
   <script>
+    // Service Worker реєстрація
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => {
-            console.log('Service Worker registered:', reg);
-            reg.update();
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  showUpdateNotification('нової версії');
-                }
-              });
-            });
-          })
-          .catch(err => console.error('Service Worker registration failed:', err));
+        // Спочатку видаляємо старі реєстрації
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (let registration of registrations) {
+            console.log('Unregistering old Service Worker:', registration.scope);
+            registration.unregister();
+          }
+        }).then(() => {
+          // Реєструємо новий Service Worker
+          setTimeout(() => {
+            navigator.serviceWorker.register('service-worker.js')
+              .then(reg => {
+                console.log('Service Worker registered:', reg);
+                
+                // Перевіряємо оновлення
+                reg.update();
+                
+                // Слухаємо подію оновлення
+                reg.addEventListener('updatefound', () => {
+                  const newWorker = reg.installing;
+                  console.log('New Service Worker found, installing...');
+                  
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('New Service Worker installed, waiting to activate');
+                      showUpdateNotification('нової версії');
+                    }
+                  });
+                });
+              })
+              .catch(err => console.error('Service Worker registration failed:', err));
+          }, 1000);
+        }).catch(err => {
+          console.error('Error unregistering Service Workers:', err);
+          // Якщо не вдалося видалити, все одно пробуємо зареєструвати
+          navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker registered:', reg))
+            .catch(err => console.error('Service Worker registration failed:', err));
+        });
       });
+    }
+    
+    // Функція показу сповіщення про оновлення
+    function showUpdateNotification(version) {
+      const updateDiv = document.createElement('div');
+      updateDiv.className = 'update-notification';
+      updateDiv.innerHTML = `
+        <div class="update-notification-content">
+          <span>📦 Доступна нова версія (${version})</span>
+          <button onclick="location.reload()" class="btn btn-primary btn-sm">Оновити</button>
+          <button onclick="this.parentElement.parentElement.remove()" class="btn btn-secondary btn-sm">Пізніше</button>
+        </div>
+      `;
+      document.body.appendChild(updateDiv);
+      setTimeout(() => updateDiv.classList.add('show'), 100);
     }
     
     // Мобільне меню
