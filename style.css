@@ -513,7 +513,7 @@ strong {
 }
 
 .navbar-logo {
-  max-height: 48px;          /* 80% висоти навбара */
+  max-height: 36px;          /* 80% висоти навбара */
   width: auto;
   object-fit: contain;
 }
@@ -534,7 +534,7 @@ strong {
 }
 
 .footer-image {
-  max-height: 36px;         /* фіксована висота, щоб не розтягувало */
+  max-height: 18px;         /* фіксована висота, щоб не розтягувало */
   width: auto;
   vertical-align: middle;
   object-fit: cover;
