@@ -12,7 +12,28 @@ let currentAnalysisMode = 'letters';
 let symbolKeyboardVisible = false;
 let currentNavPage = 'home';
 
-const APP_VERSION = "1.0.0";
+// Отримуємо версію динамічно
+let APP_VERSION = "1.0.0"; // значення за замовчуванням
+
+async function getAppVersion() {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    return new Promise((resolve) => {
+      const messageChannel = new MessageChannel();
+      messageChannel.port1.onmessage = (event) => {
+        if (event.data && event.data.version) {
+          resolve(event.data.version);
+        } else {
+          resolve("1.0.0");
+        }
+      };
+      navigator.serviceWorker.controller.postMessage(
+        { type: 'GET_VERSION' },
+        [messageChannel.port2]
+      );
+    });
+  }
+  return "1.0.0";
+}
 
 const numberInterpretations = {
   1: "Абсолют → А (1)",
@@ -609,12 +630,20 @@ function switchPage(pageId) {
   }
 }
 
+// Ініціалізація з отриманням версії
 async function initDatabase() {
+  // Отримуємо версію з Service Worker
+  const swVersion = await getAppVersion();
+  APP_VERSION = swVersion;
+  console.log('Отримано версію з Service Worker:', APP_VERSION);
+  
   const savedVersion = localStorage.getItem('appVersion');
+  console.log('Збережена версія:', savedVersion);
+  
   if (savedVersion !== APP_VERSION) {
     console.log('Оновлення версії, завантаження sings.json...');
     try {
-      const response = await fetch('sings.json');
+      const response = await fetch('sings.json', { cache: 'no-cache' });
       const baseData = await response.json();
       mergeWithBase(baseData);
       localStorage.setItem('appVersion', APP_VERSION);
@@ -625,7 +654,7 @@ async function initDatabase() {
   }
 }
 
-function mergeWithBase(baseData) {
+/*function mergeWithBase(baseData) {
   for (const [category, symbols] of Object.entries(baseData)) {
     if (!db[category]) db[category] = {};
     for (const [sym, baseItem] of Object.entries(symbols)) {
@@ -653,6 +682,71 @@ function mergeWithBase(baseData) {
     }
   }
   saveDB();
+}*/
+
+function mergeWithBase(baseData) {
+  console.log('Початок злиття даних з sings.json');
+  let updatesCount = 0;
+  
+  for (const [category, symbols] of Object.entries(baseData)) {
+    if (!db[category]) db[category] = {};
+    for (const [sym, baseItem] of Object.entries(symbols)) {
+      if (!db[category][sym]) {
+        // Новий символ - повне копіювання
+        db[category][sym] = { ...baseItem };
+        updatesCount++;
+        console.log(`Додано новий символ: ${sym} в категорії ${category}`);
+      } else {
+        const existing = db[category][sym];
+        let updated = false;
+        
+        // ОНОВЛЮЄМО ПОЛЕ "число" (ГОЛОВНА ЗМІНА)
+        if (baseItem.число !== undefined && existing.число !== baseItem.число) {
+          console.log(`Оновлено число для ${sym}: "${existing.число}" -> "${baseItem.число}"`);
+          existing.число = baseItem.число;
+          updated = true;
+        }
+        
+        // Оновлюємо поле "номер", якщо потрібно
+        if (baseItem.номер !== undefined && existing.номер !== baseItem.номер) {
+          console.log(`Оновлено номер для ${sym}: "${existing.номер}" -> "${baseItem.номер}"`);
+          existing.номер = baseItem.номер;
+          updated = true;
+        }
+        
+        // Оновлюємо поле "произношение", якщо потрібно
+        if (baseItem.произношение !== undefined && existing.произношение !== baseItem.произношение) {
+          console.log(`Оновлено вимову для ${sym}: "${existing.произношение}" -> "${baseItem.произношение}"`);
+          existing.произношение = baseItem.произношение;
+          updated = true;
+        }
+        
+        // Оновлюємо поле "транскрипция", якщо потрібно
+        if (baseItem.транскрипция !== undefined && existing.транскрипция !== baseItem.транскрипция) {
+          console.log(`Оновлено транскрипцію для ${sym}: "${existing.транскрипция}" -> "${baseItem.транскрипция}"`);
+          existing.транскрипция = baseItem.транскрипция;
+          updated = true;
+        }
+        
+        // Об'єднуємо властивості (існуюча логіка)
+        if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
+          if (!existing.свойства) existing.свойства = [];
+          baseItem.свойства.forEach(prop => {
+            if (!existing.свойства.includes(prop)) {
+              existing.свойства.push(prop);
+              console.log(`Додано властивість для ${sym}: "${prop}"`);
+              updated = true;
+            }
+          });
+        }
+        
+        if (updated) updatesCount++;
+      }
+    }
+  }
+  
+  saveDB();
+  console.log(`Злиття завершено. Оновлено/додано ${updatesCount} символів`);
 }
 
 // Перевірка оновлень Service Worker
