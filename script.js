@@ -630,9 +630,17 @@ function mergeWithBase(baseData) {
     if (!db[category]) db[category] = {};
     for (const [sym, baseItem] of Object.entries(symbols)) {
       if (!db[category][sym]) {
+        // Новий символ - повне копіювання
         db[category][sym] = { ...baseItem };
       } else {
+        // Існуючий символ - оновлюємо число та об'єднуємо властивості
         const existing = db[category][sym];
+        // Оновлюємо поле "число"
+        if (baseItem.число !== undefined) {
+          existing.число = baseItem.число;
+        }
+        
+        // Об'єднуємо властивості
         if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
           if (!existing.свойства) existing.свойства = [];
           baseItem.свойства.forEach(prop => {
