@@ -1,6 +1,83 @@
+// ========== ІЗОЛЯЦІЯ ДАНИХ ==========
+class AppStorage {
+  constructor() {
+    this.appName = this.getAppName();
+    this.prefix = `${this.appName}_`;
+    console.log('AppStorage ініціалізовано з префіксом:', this.prefix);
+  }
+  
+  getAppName() {
+    // Отримуємо унікальний ідентифікатор на основі шляху
+    const path = window.location.pathname;
+    // Видаляємо зайві слеши і створюємо безпечний префікс
+    const appPath = path.split('/').filter(p => p && p !== '').join('_') || 'root';
+    // Додаємо хеш для унікальності (опціонально)
+    return appPath;
+  }
+  
+  getKey(key) {
+    return `${this.prefix}${key}`;
+  }
+  
+  getItem(key) {
+    return localStorage.getItem(this.getKey(key));
+  }
+  
+  setItem(key, value) {
+    localStorage.setItem(this.getKey(key), value);
+  }
+  
+  removeItem(key) {
+    localStorage.removeItem(this.getKey(key));
+  }
+  
+  getAllKeys() {
+    return Object.keys(localStorage).filter(key => key.startsWith(this.prefix));
+  }
+  
+  clearAll() {
+    this.getAllKeys().forEach(key => {
+      localStorage.removeItem(key);
+    });
+  }
+  
+  // Міграція старих даних без префікса
+  migrateOldData() {
+    const oldVersion = localStorage.getItem('appVersion');
+    const oldDB = localStorage.getItem('symbolDB');
+    let migrated = false;
+    
+    if (oldVersion && !this.getItem('appVersion')) {
+      this.setItem('appVersion', oldVersion);
+      console.log('Мігровано стару версію:', oldVersion);
+      migrated = true;
+    }
+    
+    if (oldDB && !this.getItem('symbolDB')) {
+      this.setItem('symbolDB', oldDB);
+      console.log('Мігровано стару базу даних');
+      migrated = true;
+    }
+    
+    // Опціонально: видаляємо старі дані після міграції
+    if (migrated) {
+      console.log('Старі дані знайдено та мігровано');
+      // Розкоментуйте наступні рядки, якщо хочете видалити старі дані
+      // localStorage.removeItem('appVersion');
+      // localStorage.removeItem('symbolDB');
+    }
+    
+    return migrated;
+  }
+}
+
+// Ініціалізуємо сховище
+const appStorage = new AppStorage();
+
 let db;
 try {
-  db = JSON.parse(localStorage.getItem('symbolDB')) || {};
+  const storedDB = appStorage.getItem('symbolDB');
+  db = storedDB ? JSON.parse(storedDB) : {};
 } catch (e) {
   db = {};
 }
@@ -79,7 +156,7 @@ function findSymbolIgnoreCase(category, symbol) {
 }
 
 function saveDB() {
-  localStorage.setItem('symbolDB', JSON.stringify(db));
+  appStorage.setItem('symbolDB', JSON.stringify(db));
 }
 
 function reduceToSingleDigit(num) {
@@ -469,7 +546,7 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "symbols.csv";
+  link.download = `symbols_${appStorage.appName}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -630,62 +707,8 @@ function switchPage(pageId) {
   }
 }
 
-// Ініціалізація з отриманням версії
-async function initDatabase() {
-  // Отримуємо версію з Service Worker
-  const swVersion = await getAppVersion();
-  APP_VERSION = swVersion;
-  console.log('Отримано версію з Service Worker:', APP_VERSION);
-  
-  const savedVersion = localStorage.getItem('appVersion');
-  console.log('Збережена версія:', savedVersion);
-  
-  if (savedVersion !== APP_VERSION) {
-    console.log('Оновлення версії, завантаження sings.json...');
-    try {
-      const response = await fetch('sings.json', { cache: 'no-cache' });
-      const baseData = await response.json();
-      mergeWithBase(baseData);
-      localStorage.setItem('appVersion', APP_VERSION);
-      showToast('Базу даних оновлено');
-    } catch (err) {
-      console.error('Помилка завантаження sings.json', err);
-    }
-  }
-}
-
-/*function mergeWithBase(baseData) {
-  for (const [category, symbols] of Object.entries(baseData)) {
-    if (!db[category]) db[category] = {};
-    for (const [sym, baseItem] of Object.entries(symbols)) {
-      if (!db[category][sym]) {
-        // Новий символ - повне копіювання
-        db[category][sym] = { ...baseItem };
-      } else {
-        // Існуючий символ - оновлюємо число та об'єднуємо властивості
-        const existing = db[category][sym];
-        // Оновлюємо поле "число"
-        if (baseItem.число !== undefined) {
-          existing.число = baseItem.число;
-        }
-        
-        // Об'єднуємо властивості
-        if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
-          if (!existing.свойства) existing.свойства = [];
-          baseItem.свойства.forEach(prop => {
-            if (!existing.свойства.includes(prop)) {
-              existing.свойства.push(prop);
-            }
-          });
-        }
-      }
-    }
-  }
-  saveDB();
-}*/
-
 function mergeWithBase(baseData) {
-  console.log('Початок злиття даних з sings.json');
+  console.log('Початок злиття даних з sings.json для додатку:', appStorage.prefix);
   let updatesCount = 0;
   
   for (const [category, symbols] of Object.entries(baseData)) {
@@ -700,7 +723,7 @@ function mergeWithBase(baseData) {
         const existing = db[category][sym];
         let updated = false;
         
-        // ОНОВЛЮЄМО ПОЛЕ "число" (ГОЛОВНА ЗМІНА)
+        // Оновлюємо поле "число"
         if (baseItem.число !== undefined && existing.число !== baseItem.число) {
           console.log(`Оновлено число для ${sym}: "${existing.число}" -> "${baseItem.число}"`);
           existing.число = baseItem.число;
@@ -728,7 +751,7 @@ function mergeWithBase(baseData) {
           updated = true;
         }
         
-        // Об'єднуємо властивості (існуюча логіка)
+        // Об'єднуємо властивості
         if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
           if (!existing.свойства) existing.свойства = [];
           baseItem.свойства.forEach(prop => {
@@ -746,7 +769,59 @@ function mergeWithBase(baseData) {
   }
   
   saveDB();
-  console.log(`Злиття завершено. Оновлено/додано ${updatesCount} символів`);
+  console.log(`Злиття завершено. Оновлено/додано ${updatesCount} символів для додатку ${appStorage.prefix}`);
+}
+
+// Ініціалізація з отриманням версії та ізоляцією
+async function initDatabase() {
+  console.log('=== ІНІЦІАЛІЗАЦІЯ ДОДАТКУ ===');
+  console.log('Префікс додатку:', appStorage.prefix);
+  
+  // Мігруємо старі дані (без префікса)
+  const migrated = appStorage.migrateOldData();
+  if (migrated) {
+    console.log('Старі дані мігровано, оновлюємо db зі сховища');
+    try {
+      const storedDB = appStorage.getItem('symbolDB');
+      db = storedDB ? JSON.parse(storedDB) : {};
+    } catch (e) {
+      db = {};
+    }
+  }
+  
+  // Отримуємо версію з Service Worker
+  const swVersion = await getAppVersion();
+  APP_VERSION = swVersion;
+  console.log('Отримано версію з Service Worker:', APP_VERSION);
+  
+  const savedVersion = appStorage.getItem('appVersion');
+  console.log('Збережена версія (з префіксом):', savedVersion);
+  
+  if (savedVersion !== APP_VERSION) {
+    console.log('Оновлення версії, завантаження sings.json...');
+    try {
+      const response = await fetch('sings.json', { cache: 'no-cache' });
+      const baseData = await response.json();
+      console.log('sings.json завантажено, кількість літер:', Object.keys(baseData.letters || {}).length);
+      mergeWithBase(baseData);
+      appStorage.setItem('appVersion', APP_VERSION);
+      showToast('Базу даних оновлено');
+      
+      // Перевіряємо результат
+      const updatedDB = JSON.parse(appStorage.getItem('symbolDB'));
+      console.log('Базу даних оновлено, кількість літер:', Object.keys(updatedDB.letters || {}).length);
+    } catch (err) {
+      console.error('Помилка завантаження sings.json', err);
+    }
+  } else {
+    console.log('Версії співпадають, оновлення не потрібне');
+  }
+  
+  // Виводимо інформацію про поточний стан
+  console.log('=== ПОТОЧНИЙ СТАН ===');
+  console.log('Ключі додатку в localStorage:', appStorage.getAllKeys());
+  console.log('Поточна версія:', appStorage.getItem('appVersion'));
+  console.log('Розмір бази:', appStorage.getItem('symbolDB')?.length || 0, 'символів');
 }
 
 // Перевірка оновлень Service Worker
@@ -768,15 +843,12 @@ function checkForUpdates() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log('[App] Service Worker controller changed');
       showToast('Оновлення застосовано');
-      // Необов'язково: перезавантажити сторінку
-      // window.location.reload();
     });
   }
 }
 
 // Показати сповіщення про оновлення
 function showUpdateNotification(version) {
-  // Створюємо кастомне сповіщення
   const updateDiv = document.createElement('div');
   updateDiv.className = 'update-notification';
   updateDiv.innerHTML = `
@@ -818,9 +890,8 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-
 // Ініціалізація
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const importBtn = document.getElementById('importCsvBtn');
   const fileInput = document.getElementById('csvFileInput');
   if (importBtn && fileInput) {
@@ -836,8 +907,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pageId) switchPage(pageId);
     });
   });
-  initDatabase();
+  
+  await initDatabase();
   switchPage('home');
-  // Перевірка оновлень
   checkForUpdates();
 });

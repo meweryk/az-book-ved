@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.1.6'; // Збільште при зміні статичних файлів!
+const CACHE_VERSION = 'v1.1.7'; // Збільште при зміні статичних файлів!
 const STATIC_CACHE_NAME = `az-book-static-${CACHE_VERSION}`;
 const IMAGES_CACHE_NAME = `az-book-images-${CACHE_VERSION}`;
 const DATA_CACHE_NAME = `az-book-data-${CACHE_VERSION}`;
