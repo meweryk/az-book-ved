@@ -7,11 +7,8 @@ class AppStorage {
   }
   
   getAppName() {
-    // Отримуємо унікальний ідентифікатор на основі шляху
     const path = window.location.pathname;
-    // Видаляємо зайві слеши і створюємо безпечний префікс
     const appPath = path.split('/').filter(p => p && p !== '').join('_') || 'root';
-    // Додаємо хеш для унікальності (опціонально)
     return appPath;
   }
   
@@ -59,27 +56,40 @@ class AppStorage {
       migrated = true;
     }
     
-    // Опціонально: видаляємо старі дані після міграції
-    if (migrated) {
-      console.log('Старі дані знайдено та мігровано');
-      // Розкоментуйте наступні рядки, якщо хочете видалити старі дані
-      // localStorage.removeItem('appVersion');
-      // localStorage.removeItem('symbolDB');
-    }
-    
     return migrated;
+  }
+  
+  // Завантаження бази даних в глобальну змінну
+  loadDB() {
+    const storedDB = this.getItem('symbolDB');
+    if (storedDB) {
+      try {
+        return JSON.parse(storedDB);
+      } catch (e) {
+        console.error('Помилка парсингу бази даних', e);
+        return {};
+      }
+    }
+    return {};
+  }
+  
+  // Збереження бази даних з глобальної змінної
+  saveDB(db) {
+    this.setItem('symbolDB', JSON.stringify(db));
   }
 }
 
-// Ініціалізуємо сховище
-const appStorage = new AppStorage();
+// Створюємо глобальний екземпляр для доступу з консолі
+window.appStorage = new AppStorage();
 
+// Ініціалізуємо db з правильним префіксом
 let db;
 try {
-  const storedDB = appStorage.getItem('symbolDB');
-  db = storedDB ? JSON.parse(storedDB) : {};
+  db = appStorage.loadDB();
+  console.log('Базу даних завантажено, кількість категорій:', Object.keys(db).length);
 } catch (e) {
   db = {};
+  console.error('Помилка завантаження бази:', e);
 }
 
 let activeCategory = null;
@@ -90,7 +100,7 @@ let symbolKeyboardVisible = false;
 let currentNavPage = 'home';
 
 // Отримуємо версію динамічно
-let APP_VERSION = "1.0.0"; // значення за замовчуванням
+let APP_VERSION = "1.0.0";
 
 async function getAppVersion() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -156,7 +166,7 @@ function findSymbolIgnoreCase(category, symbol) {
 }
 
 function saveDB() {
-  appStorage.setItem('symbolDB', JSON.stringify(db));
+  appStorage.saveDB(db);
 }
 
 function reduceToSingleDigit(num) {
@@ -587,7 +597,6 @@ function importCSV(file) {
   reader.readAsText(file);
 }
 
-// ФУНКЦІЯ ПОШУКУ
 function searchSymbol() {
   const searchInput = document.getElementById('searchInput').value.trim();
   const searchInputLower = searchInput.toLowerCase();
@@ -602,7 +611,6 @@ function searchSymbol() {
       let found = false;
       let matchedProperties = [];
       
-      // Пошук за символом
       if (symbolLower === searchInputLower) {
         searchResults.push({
           symbol: symbol,
@@ -614,7 +622,6 @@ function searchSymbol() {
         found = true;
       }
       
-      // Пошук у властивостях
       if (!found && searchInput.length > 1 && data.свойства) {
         data.свойства.forEach(prop => {
           const propLower = prop.toLowerCase();
@@ -643,20 +650,16 @@ function searchSymbol() {
       const symbolDisplay = item.symbol;
       const categoryDisplay = item.category;
       
-      // Функція для підсвічування тексту
       function highlightText(text, searchTerm) {
         const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         return text.replace(regex, '<span class="search-highlight">$1</span>');
       }
       
-      let propertiesHtml = '';
       if (item.matchType === 'symbol') {
-        // Підсвічуємо символ
         const highlightedSymbol = highlightText(symbolDisplay, searchInput);
-        propertiesHtml = item.data.свойства?.join(', ') || 'немає властивостей';
+        const propertiesHtml = item.data.свойства?.join(', ') || 'немає властивостей';
         resultDiv.innerHTML = `<strong>${highlightedSymbol}</strong> <span class="text-muted">(${categoryDisplay})</span>: ${propertiesHtml}`;
       } else {
-        // Підсвічуємо знайдені властивості
         const allProperties = item.data.свойства || [];
         const highlightedProps = allProperties.map(prop => {
           if (item.matchedProperties.includes(prop)) {
@@ -686,7 +689,6 @@ function clearSearch() {
   document.getElementById('searchResults').classList.remove('show');
 }
 
-// Функція перемикання сторінок
 function switchPage(pageId) {
   document.querySelectorAll('.page-container').forEach(page => {
     page.classList.remove('active-page');
@@ -708,50 +710,26 @@ function switchPage(pageId) {
 }
 
 function mergeWithBase(baseData) {
-  console.log('Початок злиття даних з sings.json для додатку:', appStorage.prefix);
+  console.log('Початок злиття даних з sings.json');
   let updatesCount = 0;
   
   for (const [category, symbols] of Object.entries(baseData)) {
     if (!db[category]) db[category] = {};
     for (const [sym, baseItem] of Object.entries(symbols)) {
       if (!db[category][sym]) {
-        // Новий символ - повне копіювання
         db[category][sym] = { ...baseItem };
         updatesCount++;
-        console.log(`Додано новий символ: ${sym} в категорії ${category}`);
+        console.log(`Додано новий символ: ${sym}`);
       } else {
         const existing = db[category][sym];
         let updated = false;
         
-        // Оновлюємо поле "число"
         if (baseItem.число !== undefined && existing.число !== baseItem.число) {
           console.log(`Оновлено число для ${sym}: "${existing.число}" -> "${baseItem.число}"`);
           existing.число = baseItem.число;
           updated = true;
         }
         
-        // Оновлюємо поле "номер", якщо потрібно
-        if (baseItem.номер !== undefined && existing.номер !== baseItem.номер) {
-          console.log(`Оновлено номер для ${sym}: "${existing.номер}" -> "${baseItem.номер}"`);
-          existing.номер = baseItem.номер;
-          updated = true;
-        }
-        
-        // Оновлюємо поле "произношение", якщо потрібно
-        if (baseItem.произношение !== undefined && existing.произношение !== baseItem.произношение) {
-          console.log(`Оновлено вимову для ${sym}: "${existing.произношение}" -> "${baseItem.произношение}"`);
-          existing.произношение = baseItem.произношение;
-          updated = true;
-        }
-        
-        // Оновлюємо поле "транскрипция", якщо потрібно
-        if (baseItem.транскрипция !== undefined && existing.транскрипция !== baseItem.транскрипция) {
-          console.log(`Оновлено транскрипцію для ${sym}: "${existing.транскрипция}" -> "${baseItem.транскрипция}"`);
-          existing.транскрипция = baseItem.транскрипция;
-          updated = true;
-        }
-        
-        // Об'єднуємо властивості
         if (baseItem.свойства && Array.isArray(baseItem.свойства)) {
           if (!existing.свойства) existing.свойства = [];
           baseItem.свойства.forEach(prop => {
@@ -769,24 +747,19 @@ function mergeWithBase(baseData) {
   }
   
   saveDB();
-  console.log(`Злиття завершено. Оновлено/додано ${updatesCount} символів для додатку ${appStorage.prefix}`);
+  console.log(`Злиття завершено. Оновлено/додано ${updatesCount} символів`);
 }
 
-// Ініціалізація з отриманням версії та ізоляцією
 async function initDatabase() {
   console.log('=== ІНІЦІАЛІЗАЦІЯ ДОДАТКУ ===');
   console.log('Префікс додатку:', appStorage.prefix);
+  console.log('Ключі додатку в localStorage:', appStorage.getAllKeys());
   
-  // Мігруємо старі дані (без префікса)
+  // Мігруємо старі дані
   const migrated = appStorage.migrateOldData();
   if (migrated) {
-    console.log('Старі дані мігровано, оновлюємо db зі сховища');
-    try {
-      const storedDB = appStorage.getItem('symbolDB');
-      db = storedDB ? JSON.parse(storedDB) : {};
-    } catch (e) {
-      db = {};
-    }
+    console.log('Старі дані мігровано, перезавантажуємо db');
+    db = appStorage.loadDB();
   }
   
   // Отримуємо версію з Service Worker
@@ -806,10 +779,6 @@ async function initDatabase() {
       mergeWithBase(baseData);
       appStorage.setItem('appVersion', APP_VERSION);
       showToast('Базу даних оновлено');
-      
-      // Перевіряємо результат
-      const updatedDB = JSON.parse(appStorage.getItem('symbolDB'));
-      console.log('Базу даних оновлено, кількість літер:', Object.keys(updatedDB.letters || {}).length);
     } catch (err) {
       console.error('Помилка завантаження sings.json', err);
     }
@@ -817,20 +786,17 @@ async function initDatabase() {
     console.log('Версії співпадають, оновлення не потрібне');
   }
   
-  // Виводимо інформацію про поточний стан
   console.log('=== ПОТОЧНИЙ СТАН ===');
-  console.log('Ключі додатку в localStorage:', appStorage.getAllKeys());
   console.log('Поточна версія:', appStorage.getItem('appVersion'));
   console.log('Розмір бази:', appStorage.getItem('symbolDB')?.length || 0, 'символів');
+  console.log('Кількість категорій в db:', Object.keys(db).length);
 }
 
-// Перевірка оновлень Service Worker
 function checkForUpdates() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
       registration.update();
       
-      // Слухаємо повідомлення від Service Worker
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data && event.data.type === 'SW_UPDATED') {
           console.log('[App] New version available:', event.data.version);
@@ -839,7 +805,6 @@ function checkForUpdates() {
       });
     });
     
-    // Перевіряємо чи є очікуючий Service Worker
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log('[App] Service Worker controller changed');
       showToast('Оновлення застосовано');
@@ -847,7 +812,6 @@ function checkForUpdates() {
   }
 }
 
-// Показати сповіщення про оновлення
 function showUpdateNotification(version) {
   const updateDiv = document.createElement('div');
   updateDiv.className = 'update-notification';
@@ -881,7 +845,6 @@ function closeUpdateNotification() {
   }
 }
 
-// Періодична перевірка оновлень (кожні 30 хвилин)
 setInterval(() => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
@@ -890,7 +853,6 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-// Ініціалізація
 document.addEventListener('DOMContentLoaded', async () => {
   const importBtn = document.getElementById('importCsvBtn');
   const fileInput = document.getElementById('csvFileInput');
