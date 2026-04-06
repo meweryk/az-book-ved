@@ -1,0 +1,574 @@
+/* ========== СТИЛІ ТІЛЬКИ ДЛЯ КАЛЕНДАРЯ (обмежено .kolyada-card) ========== */
+
+.kolyada-card,
+.kolyada-card * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Основний контейнер */
+.kolyada-card {
+    max-width: 950px;
+    width: 100%;
+    background: #fffef7;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e0d5b5;
+    position: relative;
+}
+
+/* Слов'янський блок */
+.kolyada-slavic {
+    background: #faf7ed;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: border-left 0.2s;
+    border: 1px solid #e8e0c8;
+}
+
+.kolyada-slavic-title {
+    font-size: 0.95rem;
+    color: #5d3a1a;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+/* Рядок часу */
+.kolyada-time-row {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+    margin-bottom: 0.75rem;
+}
+
+.kolyada-time-block {
+    text-align: center;
+    background: #fff8e8;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.8rem;
+    min-width: 70px;
+    border: 1px solid #e0d5b5;
+}
+
+.kolyada-time-value {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #5c3d2e;
+    font-family: monospace;
+    line-height: 1;
+}
+
+.kolyada-time-label {
+    font-size: 0.6rem;
+    color: #a0886a;
+    letter-spacing: 1px;
+}
+
+/* Година */
+.kolyada-hour-info {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.kolyada-hour-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #8b5a2b;
+}
+
+.kolyada-hour-desc {
+    font-size: 0.7rem;
+    color: #a0886a;
+    margin-top: 0.2rem;
+    line-height: 1.3;
+}
+
+/* День неділі */
+.kolyada-weekday-row {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0d5b5;
+}
+
+.kolyada-weekday-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #c4a35a;
+}
+
+.kolyada-weekday-desc {
+    font-size: 0.7rem;
+    color: #8b7355;
+    margin-top: 0.2rem;
+    line-height: 1.3;
+}
+
+.kolyada-month-desc,
+.kolyada-chertog-desc,
+.kolyada-hall-desc {
+    font-size: 0.7rem;
+    color: #6b8c5c;
+    margin-top: 0.3rem;
+    font-style: italic;
+}
+
+.kolyada-chertog-desc {
+    color: #8b7355;
+    border-top: 1px dashed #e0d5b5;
+    padding-top: 0.3rem;
+    margin-top: 0.3rem;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.kolyada-hall-desc {
+    color: #c4a35a;
+    font-style: normal;
+    font-weight: bold;
+}
+
+/* Сітка */
+.kolyada-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.kolyada-item {
+    background: #fff8e8;
+    border-radius: 0.75rem;
+    padding: 0.6rem;
+    text-align: center;
+    border: 1px solid #e8e0c8;
+}
+
+.kolyada-item .kolyada-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #5c3d2e;
+    font-family: monospace;
+}
+
+.kolyada-item .kolyada-hint {
+    font-size: 0.6rem;
+    color: #a0886a;
+    text-transform: uppercase;
+}
+
+/* Григоріанський блок */
+.kolyada-modern {
+    background: #faf7ed;
+    border-radius: 0.75rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border: 1px solid #e8e0c8;
+}
+
+.kolyada-modern .kolyada-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: #8b7355;
+    text-transform: uppercase;
+}
+
+.kolyada-modern .kolyada-time {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: monospace;
+    color: #5c3d2e;
+    letter-spacing: 3px;
+}
+
+.kolyada-modern .kolyada-date {
+    color: #a0886a;
+    font-size: 0.85rem;
+}
+
+.kolyada-sync-status {
+    font-size: 0.65rem;
+    color: #6b8c5c;
+    text-align: center;
+    margin-top: 0.3rem;
+}
+
+/* Конвертер */
+.kolyada-converter {
+    background: #faf7ed;
+    border-radius: 0.75rem;
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #c4a35a;
+}
+
+.kolyada-converter-title {
+    font-size: 0.7rem;
+    color: #8b7355;
+    text-align: center;
+    margin-bottom: 0.6rem;
+    letter-spacing: 1px;
+}
+
+.kolyada-converter-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    margin-bottom: 0.7rem;
+}
+
+.kolyada-converter-inputs input,
+.kolyada-converter-inputs select {
+    background: #fff8e8;
+    color: #5c3d2e;
+    border: 1px solid #e0d5b5;
+    border-radius: 0.5rem;
+    padding: 0.4rem;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.kolyada-converter-inputs input {
+    width: 70px;
+}
+
+.kolyada-converter-inputs select {
+    width: 90px;
+}
+
+.kolyada-converter button {
+    background: #c4a35a;
+    color: #fffef7;
+    border: none;
+    border-radius: 1.5rem;
+    padding: 0.3rem 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 0 0.3rem;
+    font-size: 0.7rem;
+}
+
+.kolyada-converter button:hover {
+    background: #a0886a;
+}
+
+.kolyada-converter-result {
+    background: #fff8e8;
+    border-radius: 0.5rem;
+    padding: 0.6rem;
+    margin-top: 0.8rem;
+    font-size: 0.8rem;
+    color: #5c3d2e;
+    text-align: center;
+    display: none;
+}
+
+.kolyada-converter-result.show {
+    display: block;
+}
+
+/* Футер */
+.kolyada-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #a0886a;
+    border-top: 1px solid #e0d5b5;
+    padding-top: 0.6rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Іконка налаштувань */
+.kolyada-settings-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #fff8e8;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 100;
+    color: #fffef7;
+}
+
+.kolyada-settings-icon:hover {
+    transform: scale(1.05);
+    background: #fff8e8;
+}
+
+/* Панель налаштувань */
+.kolyada-settings-panel {
+    display: none;
+    position: absolute;
+    top: 3rem;
+    right: 1rem;
+    background: #fffef7;
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 280px;
+    border: 1px solid #c4a35a;
+    z-index: 101;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.kolyada-settings-panel.show {
+    display: block;
+}
+
+.kolyada-settings-panel input,
+.kolyada-settings-panel select,
+.kolyada-settings-panel button {
+    width: 100%;
+    margin: 0.4rem 0;
+    padding: 0.4rem;
+    background: #faf7ed;
+    color: #5c3d2e;
+    border: 1px solid #e0d5b5;
+    border-radius: 0.5rem;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.kolyada-settings-panel .kolyada-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.kolyada-settings-panel .kolyada-row input {
+    width: 33%;
+}
+
+.kolyada-settings-panel h4 {
+    color: #8b7355;
+    margin: 0.5rem 0 0.2rem;
+    font-size: 0.75rem;
+}
+
+/* ========== ДЕСКТОПНІ РОЗМІРИ ========== */
+@media (min-width: 768px) {
+    .kolyada-slavic-title {
+        font-size: 1.1rem;
+    }
+    
+    .kolyada-time-value {
+        font-size: 2.2rem;
+    }
+    
+    .kolyada-time-label {
+        font-size: 0.75rem;
+    }
+    
+    .kolyada-hour-name {
+        font-size: 1.3rem;
+    }
+    
+    .kolyada-hour-desc {
+        font-size: 0.85rem;
+    }
+    
+    .kolyada-weekday-name {
+        font-size: 1.2rem;
+    }
+    
+    .kolyada-weekday-desc,
+    .kolyada-month-desc,
+    .kolyada-chertog-desc,
+    .kolyada-hall-desc {
+        font-size: 0.85rem;
+    }
+    
+    .kolyada-item .kolyada-value {
+        font-size: 1.6rem;
+    }
+    
+    .kolyada-item .kolyada-hint {
+        font-size: 0.7rem;
+    }
+    
+    .kolyada-modern .kolyada-label {
+        font-size: 0.85rem;
+    }
+    
+    .kolyada-modern .kolyada-time {
+        font-size: 2.5rem;
+    }
+    
+    .kolyada-modern .kolyada-date {
+        font-size: 1rem;
+    }
+    
+    .kolyada-sync-status {
+        font-size: 0.75rem;
+    }
+    
+    .kolyada-converter-title {
+        font-size: 0.85rem;
+    }
+    
+    .kolyada-converter-inputs input,
+    .kolyada-converter-inputs select {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    .kolyada-converter-inputs input {
+        width: 85px;
+    }
+    
+    .kolyada-converter-inputs select {
+        width: 105px;
+    }
+    
+    .kolyada-converter button {
+        font-size: 0.85rem;
+        padding: 0.4rem 1.2rem;
+    }
+    
+    .kolyada-converter-result {
+        font-size: 0.9rem;
+        padding: 0.8rem;
+    }
+    
+    .kolyada-footer {
+        font-size: 0.75rem;
+    }
+    
+    .kolyada-settings-panel input,
+    .kolyada-settings-panel select,
+    .kolyada-settings-panel button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    .kolyada-settings-panel h4 {
+        font-size: 0.85rem;
+    }
+}
+
+/* ========== ВЕЛИКІ ЕКРАНИ (від 1200px) ========== */
+@media (min-width: 1200px) {
+    .kolyada-card {
+        max-width: 1100px;
+    }
+    
+    .kolyada-time-value {
+        font-size: 2.5rem;
+    }
+    
+    .kolyada-item .kolyada-value {
+        font-size: 1.8rem;
+    }
+    
+    .kolyada-modern .kolyada-time {
+        font-size: 2.8rem;
+    }
+    
+    .kolyada-grid {
+        gap: 1rem;
+    }
+    
+    .kolyada-time-row {
+        gap: 1rem;
+    }
+}
+
+/* ========== МОБІЛЬНА АДАПТАЦІЯ (до 550px) ========== */
+@media (max-width: 550px) {
+    .kolyada-card {
+        padding: 0.8rem;
+    }
+    
+    .kolyada-slavic {
+        padding: 0.8rem;
+    }
+    
+    .kolyada-time-value {
+        font-size: 1.2rem;
+    }
+    
+    .kolyada-time-block {
+        padding: 0.3rem 0.5rem;
+        min-width: 55px;
+    }
+    
+    .kolyada-time-row {
+        gap: 0.4rem;
+    }
+    
+    .kolyada-item .kolyada-value {
+        font-size: 1rem;
+    }
+    
+    .kolyada-modern .kolyada-time {
+        font-size: 1.5rem;
+    }
+    
+    .kolyada-grid {
+        gap: 0.4rem;
+    }
+    
+    .kolyada-converter-inputs input {
+        width: 55px;
+        font-size: 0.7rem;
+    }
+    
+    .kolyada-converter-inputs select {
+        width: 75px;
+        font-size: 0.7rem;
+    }
+    
+    .kolyada-chertog-desc {
+        max-height: 100px;
+    }
+    
+    .kolyada-settings-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        top: 0.8rem;
+        right: 0.8rem;
+    }
+}
+
+.kolyada-subtitle {
+    font-size: 0.65rem;
+    font-weight: normal;
+    color: #a0886a;
+    margin-top: 0.3rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.sun-icon {
+    color: #f5a623; /* золотисто-жовтогарячий */
+    font-size: 1.1em;
+}
+
+.moon-icon {
+    color: #6b8c5c; /* зелений або */
+    /* або color: #5c8a8a; (блакитний) */
+    font-size: 1.1em;
+}
+
+/* Для десктопа трохи більший шрифт */
+@media (min-width: 768px) {
+    .kolyada-subtitle {
+        font-size: 0.7rem;
+    }
+}

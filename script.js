@@ -365,7 +365,7 @@ function selectCategory(cat, btn) {
     const title = document.createElement('div');
     title.innerHTML = '<strong>Символи:</strong>';
     symbolListContainer.appendChild(title);
-    if (cat === 'letters' || cat === 'energies') {
+    if (cat === 'letters') {
       const symbolData = symbols.map(sym => ({
         symbol: sym,
         number: parseInt(db[cat][sym].номер) || 0
@@ -397,6 +397,11 @@ function selectCategory(cat, btn) {
       }
     } else {
       symbols.sort();
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'symbols-row';
+      rowDiv.style.justifyContent = 'center';
+      //rowDiv.style.gap = '0.5rem';
+      rowDiv.style.flexWrap = 'wrap';
       symbols.forEach(sym => {
         const btn = document.createElement('span');
         btn.className = 'symbol-btn';
@@ -408,8 +413,9 @@ function selectCategory(cat, btn) {
             currentSymbolInput.dispatchEvent(event);
           }
         };
-        symbolListContainer.appendChild(btn);
+        rowDiv.appendChild(btn);
       });
+      symbolListContainer.appendChild(rowDiv);
     }
   } else {
     symbolListContainer.textContent = 'Немає символів у категорії.';
@@ -707,6 +713,12 @@ function switchPage(pageId) {
   if (pageId === 'analyze' && document.getElementById('wordInput').value.trim()) {
     analyzeWord();
   }
+  // Завантажуємо календар Круголѣтъ Числобога при переході на сторінку
+  if (pageId === 'kolyada') {
+    loadKolyadaCalendar();
+  }
+  
+  window.scrollTo(0, 0);
 }
 
 function mergeWithBase(baseData) {
@@ -852,6 +864,67 @@ setInterval(() => {
     });
   }
 }, 30 * 60 * 1000);
+
+// Функція завантаження календаря Круголѣтъ Числобога
+let kolyadaLoaded = false;
+
+async function loadKolyadaCalendar() {
+  const container = document.getElementById('kolyadaPage');
+  if (!container) return;
+  
+  // Якщо вже завантажено, не завантажуємо повторно
+  if (kolyadaLoaded) return;
+  
+  try {
+    // Завантажуємо HTML календаря
+    const response = await fetch('./kolyadaDar.html');
+    const html = await response.text();
+    
+    // Витягуємо тільки вміст body (без тегів html/head)
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const bodyContent = doc.body.innerHTML;
+    
+    // Вставляємо в контейнер
+    container.innerHTML = bodyContent;
+    
+    // Динамічно підключаємо CSS (якщо ще не підключено)
+    if (!document.querySelector('link[href="./kolyadaDar.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = './kolyadaDar.css';
+      document.head.appendChild(link);
+    }
+    
+    // Динамічно підключаємо JS (якщо ще не підключено)
+    if (!document.querySelector('script[src="./kolyadaDar.js"]')) {
+      const script = document.createElement('script');
+      script.src = './kolyadaDar.js';
+      script.onload = () => {
+        console.log('Коляди Даръ завантажено');
+        // Чекаємо ініціалізації календаря
+        setTimeout(() => {
+          if (window.initKolyadaDar) {
+            window.initKolyadaDar();
+          }
+        }, 100);
+      };
+      document.body.appendChild(script);
+    } else {
+      // Якщо скрипт вже підключений, просто ініціалізуємо
+      setTimeout(() => {
+        if (window.initKolyadaDar) {
+          window.initKolyadaDar();
+        }
+      }, 100);
+    }
+    
+    kolyadaLoaded = true;
+  } catch (error) {
+    console.error('Помилка завантаження календаря:', error);
+    container.innerHTML = '<div class="alert alert-danger m-3">Помилка завантаження календаря "Круголѣтъ Числобога"</div>';
+  }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   const importBtn = document.getElementById('importCsvBtn');

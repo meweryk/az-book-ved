@@ -1,0 +1,148 @@
+<div class="kolyada-slavic-title">
+    <span class="sun-icon">☀</span> КОЛЯДИ ДАРЪ · КРУГОЛЕТ ЧИСЛОБОГА <span class="moon-icon">☾</span>
+    <div class="kolyada-subtitle">Складено за міфами, легендами та відомостями з мережі інтернет</div>
+</div>
+<div class="kolyada-card" id="kolyadaCard" style="position: relative;">
+    
+        <!-- Іконка налаштувань (ВГОРІ ПРАВОРУЧ) -->
+    <div class="kolyada-settings-icon" id="kolyadaSettingsIcon">⚙️</div>
+    <div class="kolyada-settings-panel" id="kolyadaSettingsPanel">
+        <div style="color:#8b7355; text-align:center;">⚙️ НАЛАШТУВАННЯ</div>
+        <h4>📅 ПОЧАТОК ЦИКЛУ (Коло Життя)</h4>
+        <div class="kolyada-row">
+            <input type="number" id="kolyadaStartYear" placeholder="Рік" value="2012">
+            <input type="number" id="kolyadaStartMonth" placeholder="Міс" min="1" max="12" value="9">
+            <input type="number" id="kolyadaStartDay" placeholder="День" min="1" max="31" value="21">
+        </div>
+        <div class="kolyada-row">
+            <input type="number" id="kolyadaStartHour" placeholder="Год" min="0" max="23" value="19">
+            <input type="number" id="kolyadaStartMinute" placeholder="Хв" min="0" max="59" value="0">
+        </div>
+        <h4>🏷️ НАЗВИ РОКІВ (16-річний цикл)</h4>
+        <select id="kolyadaVersionSelect">
+            <option value="hinevych">Версія Хіневича</option>
+            <option value="alternative">Альтернативна</option>
+            <option value="vedic">Ведична (Чертоги)</option>
+            <option value="daariy">Даарійська</option>
+        </select>
+        <button id="kolyadaSaveSettings">💾 ЗБЕРЕГТИ</button>
+        <button id="kolyadaCloseSettings">❌ ЗАКРИТИ</button>
+    </div>
+    
+    <!-- СЛОВ'ЯНСЬКИЙ БЛОК -->
+    <div class="kolyada-slavic" id="kolyadaSlavicCard">
+        <!-- Рядок: ГОДИНА : ЧАСТИНА : СИГ -->
+        <div class="kolyada-time-row">
+            <div class="kolyada-time-block">
+                <div class="kolyada-time-value" id="kolyadaSHour">--</div>
+                <div class="kolyada-time-label">ГОДИНА</div>
+            </div>
+            <div class="kolyada-time-block">
+                <div class="kolyada-time-value" id="kolyadaSPart">---</div>
+                <div class="kolyada-time-label">ЧАСТИНА</div>
+            </div>
+            <div class="kolyada-time-block">
+                <div class="kolyada-time-value" id="kolyadaSSig">---</div>
+                <div class="kolyada-time-label">СИГ</div>
+            </div>
+        </div>
+        
+        <!-- Сітка решти даних -->
+    <div class="kolyada-grid">
+        <div class="kolyada-item">
+            <div class="kolyada-value" id="kolyadaSYear">----</div>
+            <div class="kolyada-hint">ЛѢТО</div>
+        </div>
+        <div class="kolyada-item">
+            <div class="kolyada-value" id="kolyadaSMonth">----</div>
+            <div class="kolyada-hint">МѢСЯЦЬ (№<span id="kolyadaMonthNum">-</span>)</div>
+        </div>
+        <div class="kolyada-item">
+            <div class="kolyada-value" id="kolyadaSDay">--</div>
+            <div class="kolyada-hint">ДЕНЬ</div>
+        </div>
+    </div>
+        
+        <!-- Назва години + опис -->
+        <div class="kolyada-hour-info">
+            <div class="kolyada-hour-name" id="kolyadaSHourName">--</div>
+            <div class="kolyada-hour-desc" id="kolyadaHourDesc"></div>
+        </div>
+        
+        <!-- День неділі + опис -->
+        <div class="kolyada-weekday-row">
+            <div class="kolyada-weekday-name" id="kolyadaSWeekday">--</div>
+            <div class="kolyada-weekday-desc" id="kolyadaWeekdayDesc"></div>
+            <div class="kolyada-month-desc" id="kolyadaMonthDesc"></div>
+            <div class="kolyada-chertog-desc" id="kolyadaChertogDesc"></div>
+            <div class="kolyada-hall-desc" id="kolyadaHallDesc"></div>
+        </div>
+        
+        
+        
+        <div class="kolyada-footer">
+            <span id="kolyadaDayStartLabel">✦ ПОЧАТОК ДОБИ О 19:00 ✦</span>
+            <span id="kolyadaYearName">--</span>
+            <span id="kolyadaElementInfo" style="color:#dbb87c">--</span>
+        </div>
+    </div>
+
+    <!-- ГРИГОРІАНСЬКИЙ БЛОК -->
+    <div class="kolyada-modern">
+        <div class="kolyada-label">ГРИГОРІАНСЬКИЙ ЧАС (МІСЦЕВИЙ)</div>
+        <div class="kolyada-time" id="kolyadaModernTime">--:--:--</div>
+        <div class="kolyada-date" id="kolyadaModernDate">----</div>
+        <div class="kolyada-sync-status" id="kolyadaSyncStatus">🔄 Синхронізація...</div>
+    </div>
+
+    <!-- КОНВЕРТЕР -->
+    <div class="kolyada-converter">
+        <div class="kolyada-converter-title">📅 КОНВЕРТЕР ГРИГОРІАНСЬКОЇ ДАТИ В СЛОВ'ЯНСЬКУ</div>
+        <div class="kolyada-converter-inputs">
+            <input type="number" id="kolyadaConvYear" placeholder="Рік" value="1967">
+            <select id="kolyadaConvMonth">
+                <option value="1">Січень</option><option value="2">Лютий</option><option value="3">Березень</option>
+                <option value="4">Квітень</option><option value="5">Травень</option><option value="6">Червень</option>
+                <option value="7">Липень</option><option value="8">Серпень</option><option value="9">Вересень</option>
+                <option value="10">Жовтень</option><option value="11">Листопад</option><option value="12">Грудень</option>
+            </select>
+            <input type="number" id="kolyadaConvDay" placeholder="День" value="11" min="1" max="31">
+            <input type="number" id="kolyadaConvHour" placeholder="Год" value="7" min="0" max="23">
+            <input type="number" id="kolyadaConvMinute" placeholder="Хв" value="30" min="0" max="59">
+        </div>
+        <div style="text-align:center">
+            <button id="kolyadaConvertBtn">🔄 ПЕРЕРАХ.</button>
+            <button id="kolyadaSetCurrentBtn">📅 ПОТОЧНИЙ</button>
+        </div>
+        <div class="kolyada-converter-result" id="kolyadaConverterResult">
+            <div id="kolyadaConvResultText"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Обгортка для відносного позиціонування іконки -->
+<div style="position: relative;">
+    <div class="kolyada-settings-icon" id="kolyadaSettingsIcon">⚙️</div>
+    <div class="kolyada-settings-panel" id="kolyadaSettingsPanel">
+        <div style="color:#ffdfaa; text-align:center;">⚙️ НАЛАШТУВАННЯ</div>
+        <h4>📅 ПОЧАТОК ЦИКЛУ (Коло Життя)</h4>
+        <div class="kolyada-row">
+            <input type="number" id="kolyadaStartYear" placeholder="Рік" value="2012">
+            <input type="number" id="kolyadaStartMonth" placeholder="Міс" min="1" max="12" value="9">
+            <input type="number" id="kolyadaStartDay" placeholder="День" min="1" max="31" value="21">
+        </div>
+        <div class="kolyada-row">
+            <input type="number" id="kolyadaStartHour" placeholder="Год" min="0" max="23" value="19">
+            <input type="number" id="kolyadaStartMinute" placeholder="Хв" min="0" max="59" value="0">
+        </div>
+        <h4>🏷️ НАЗВИ РОКІВ (16-річний цикл)</h4>
+        <select id="kolyadaVersionSelect">
+            <option value="hinevych">Версія Хіневича</option>
+            <option value="alternative">Альтернативна</option>
+            <option value="vedic">Ведична (Чертоги)</option>
+            <option value="daariy">Даарійська</option>
+        </select>
+        <button id="kolyadaSaveSettings">💾 ЗБЕРЕГТИ</button>
+        <button id="kolyadaCloseSettings">❌ ЗАКРИТИ</button>
+    </div>
+</div>

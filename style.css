@@ -281,7 +281,7 @@ strong {
 
 .symbol-btn {
   cursor: pointer;
-  margin: 0 2px;
+  margin: 2px;
   padding: 2px 4px;
   border-radius: 3px;
   background: #e6d9b8;
@@ -318,7 +318,7 @@ strong {
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 4px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .symbol-item {
@@ -539,3 +539,266 @@ strong {
   vertical-align: middle;
   object-fit: cover;
 }
+
+/* ========== СТИЛІ ДЛЯ КОЛЯДИ ДАРЪ (Круголѣтъ Числобога) ========== */
+/* ========== КОЛЯДИ ДАРЪ – АДАПТАЦІЯ ПІД ОСНОВНИЙ ДОДАТОК ========== */
+
+#kolyadaPage .kolyada-card {
+    max-width: 950px;
+    width: 100%;
+    background: #fffef7 !important;  /* Світлий пергамент */
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e0d5b5;
+    margin: 0 auto;
+}
+
+#kolyadaPage .kolyada-slavic {
+    background: #faf7ed !important;  /* Трохи темніший пергамент */
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e8e0c8;
+}
+
+#kolyadaPage .kolyada-slavic-title {
+    font-size: 0.85rem;
+    color: #8b7355 !important;  /* Коричневий */
+    text-align: center;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+#kolyadaContainer .kolyada-time-block {
+    background: #fff8e8 !important;
+    border: 1px solid #e0d5b5;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    min-width: 65px;
+}
+
+#kolyadaContainer .kolyada-time-value {
+    color: #5c3d2e !important;  /* Темно-коричневий */
+    font-size: 1.4rem;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+#kolyadaContainer .kolyada-time-label {
+    color: #a0886a !important;  /* Світло-коричневий */
+    font-size: 0.6rem;
+}
+
+#kolyadaContainer .kolyada-hour-name {
+    color: #8b5a2b !important;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+#kolyadaContainer .kolyada-hour-desc {
+    color: #a0886a !important;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-weekday-name {
+    color: #c4a35a !important;  /* Золотистий */
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+#kolyadaContainer .kolyada-weekday-desc,
+#kolyadaContainer .kolyada-month-desc {
+    color: #8b7355 !important;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-chertog-desc {
+    color: #6b8c5c !important;  /* Зелений акцент */
+    border-top: 1px dashed #e0d5b5;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-hall-desc {
+    color: #c4a35a !important;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+#kolyadaContainer .kolyada-item {
+    background: #fff8e8 !important;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    border: 1px solid #e8e0c8;
+}
+
+#kolyadaContainer .kolyada-item .kolyada-value {
+    color: #5c3d2e !important;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#kolyadaContainer .kolyada-item .kolyada-hint {
+    color: #a0886a !important;
+    font-size: 0.55rem;
+}
+
+#kolyadaContainer .kolyada-modern {
+    background: #faf7ed !important;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e8e0c8;
+}
+
+#kolyadaContainer .kolyada-modern .kolyada-label {
+    color: #8b7355 !important;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+#kolyadaContainer .kolyada-modern .kolyada-time {
+    color: #5c3d2e !important;
+    font-size: 1.6rem;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+#kolyadaContainer .kolyada-modern .kolyada-date {
+    color: #a0886a !important;
+    font-size: 0.75rem;
+}
+
+#kolyadaContainer .kolyada-sync-status {
+    color: #6b8c5c !important;
+    font-size: 0.6rem;
+}
+
+#kolyadaContainer .kolyada-converter {
+    background: #faf7ed !important;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid #c4a35a;
+}
+
+#kolyadaContainer .kolyada-converter-title {
+    color: #8b7355 !important;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-converter-inputs input,
+#kolyadaContainer .kolyada-converter-inputs select {
+    background: #fff8e8 !important;
+    color: #5c3d2e !important;
+    border: 1px solid #e0d5b5;
+    border-radius: 0.5rem;
+    padding: 0.3rem;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-converter button {
+    background: #c4a35a !important;
+    color: #fffef7 !important;
+    border: none;
+    border-radius: 1.5rem;
+    padding: 0.25rem 1rem;
+    font-size: 0.7rem;
+}
+
+#kolyadaContainer .kolyada-converter button:hover {
+    background: #a0886a !important;
+}
+
+#kolyadaContainer .kolyada-converter-result {
+    background: #fff8e8 !important;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    color: #5c3d2e !important;
+    font-size: 0.75rem;
+}
+
+#kolyadaContainer .kolyada-footer {
+    border-top: 1px solid #e0d5b5;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+#kolyadaContainer .kolyada-footer span {
+    color: #a0886a !important;
+    font-size: 0.6rem;
+}
+
+/* Риска після сітки з роком/місяцем/днем */
+#kolyadaContainer .kolyada-grid {
+    border-bottom: 1px solid #e0d5b5;
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+#kolyadaContainer .kolyada-settings-icon {
+    background: #c4a35a !important;
+    color: #fffef7 !important;
+}
+
+#kolyadaContainer .kolyada-settings-panel {
+    background: #fffef7 !important;
+    border: 1px solid #c4a35a;
+}
+
+#kolyadaContainer .kolyada-settings-panel input,
+#kolyadaContainer .kolyada-settings-panel select {
+    background: #faf7ed !important;
+    color: #5c3d2e !important;
+    border: 1px solid #e0d5b5;
+}
+
+#kolyadaContainer .kolyada-settings-panel button {
+    background: #c4a35a !important;
+    color: #fffef7 !important;
+}
+
+/* Мобільні пристрої для календаря */
+@media (max-width: 768px) {
+    #kolyadaContainer .kolyada-card {
+        margin-top: 1.5rem;
+    }
+    
+    #kolyadaContainer .kolyada-settings-icon {
+        top: 0.5rem;
+        right: 0.8rem;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    #kolyadaContainer .kolyada-settings-panel {
+        top: 2.8rem;
+        right: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #kolyadaContainer .kolyada-card {
+        margin-top: 2rem;
+        padding: 0.8rem;
+    }
+    
+    #kolyadaContainer .kolyada-settings-icon {
+        top: 0.3rem;
+        right: 0.5rem;
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    #kolyadaContainer .kolyada-settings-panel {
+        top: 2.5rem;
+        right: 0.5rem;
+        width: 260px;
+    }
+}
+
