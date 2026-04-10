@@ -8,7 +8,7 @@
     <div class="kolyada-settings-icon" id="kolyadaSettingsIcon">⚙️</div>
     <div class="kolyada-settings-panel" id="kolyadaSettingsPanel">
         <div style="color:#8b7355; text-align:center;">⚙️ НАЛАШТУВАННЯ</div>
-        <h4>📅 ПОЧАТОК ЦИКЛУ (Коло Життя)</h4>
+        <h4>📅 ПОЧАТОК ЦИКЛУ (Коло Життя 144 літа)</h4>
         <div class="kolyada-row">
             <input type="number" id="kolyadaStartYear" placeholder="Рік" value="2012">
             <input type="number" id="kolyadaStartMonth" placeholder="Міс" min="1" max="12" value="9">
@@ -78,12 +78,10 @@
             <div class="kolyada-hall-desc" id="kolyadaHallDesc"></div>
         </div>
         
-        
-        
         <div class="kolyada-footer">
-            <span id="kolyadaDayStartLabel">✦ ПОЧАТОК ДОБИ О 19:00 ✦</span>
-            <span id="kolyadaYearName">--</span>
-            <span id="kolyadaElementInfo" style="color:#dbb87c">--</span>
+            <div><span id="kolyadaDayStartLabel">✦ ПОЧАТОК ДОБИ О 19:00 ✦</span>
+            <span id="kolyadaYearName">------</span></div>
+            <div><span id="kolyadaElementInfo"></span></div>
         </div>
     </div>
 
@@ -92,23 +90,31 @@
         <div class="kolyada-label">ГРИГОРІАНСЬКИЙ ЧАС (МІСЦЕВИЙ)</div>
         <div class="kolyada-time" id="kolyadaModernTime">--:--:--</div>
         <div class="kolyada-date" id="kolyadaModernDate">----</div>
-        <div class="kolyada-sync-status" id="kolyadaSyncStatus">🔄 Синхронізація...</div>
+        <div class="kolyada-sync-status" id="kolyadaSyncStatus">✓ Час пристрою</div>
     </div>
 
     <!-- КОНВЕРТЕР -->
     <div class="kolyada-converter">
         <div class="kolyada-converter-title">📅 КОНВЕРТЕР ГРИГОРІАНСЬКОЇ ДАТИ В СЛОВ'ЯНСЬКУ</div>
         <div class="kolyada-converter-inputs">
-            <input type="number" id="kolyadaConvYear" placeholder="Рік" value="1967">
+            <input type="number" id="kolyadaConvYear" placeholder="Рік" value="2012">
             <select id="kolyadaConvMonth">
-                <option value="1">Січень</option><option value="2">Лютий</option><option value="3">Березень</option>
-                <option value="4">Квітень</option><option value="5">Травень</option><option value="6">Червень</option>
-                <option value="7">Липень</option><option value="8">Серпень</option><option value="9">Вересень</option>
-                <option value="10">Жовтень</option><option value="11">Листопад</option><option value="12">Грудень</option>
+                <option value="1">Січень</option>
+                <option value="2">Лютий</option>
+                <option value="3">Березень</option>
+                <option value="4">Квітень</option>
+                <option value="5">Травень</option>
+                <option value="6">Червень</option>
+                <option value="7">Липень</option>
+                <option value="8">Серпень</option>
+                <option value="9" selected>Вересень</option>
+                <option value="10">Жовтень</option>
+                <option value="11">Листопад</option>
+                <option value="12">Грудень</option>
             </select>
-            <input type="number" id="kolyadaConvDay" placeholder="День" value="11" min="1" max="31">
-            <input type="number" id="kolyadaConvHour" placeholder="Год" value="7" min="0" max="23">
-            <input type="number" id="kolyadaConvMinute" placeholder="Хв" value="30" min="0" max="59">
+            <input type="number" id="kolyadaConvDay" placeholder="День" value="22" min="1" max="31">
+            <input type="number" id="kolyadaConvHour" placeholder="Год" value="19" min="0" max="23">
+            <input type="number" id="kolyadaConvMinute" placeholder="Хв" value="00" min="0" max="59">
         </div>
         <div style="text-align:center">
             <button id="kolyadaConvertBtn">🔄 ПЕРЕРАХ.</button>

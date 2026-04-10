@@ -16,7 +16,7 @@ let syncError = false;
 const DEFAULT_SETTINGS = {
     year: 2012,
     month: 9,      // вересень (1-12 для зберігання)
-    day: 21,
+    day: 22,
     hour: 19,
     minute: 0,
     version: "daariy",
@@ -196,7 +196,7 @@ function getMonthByDayOffset(dayOffset, isSacred) {
 }
 
 // ОСНОВНА ФУНКЦІЯ ПЕРЕКЛАДУ ГРИГОРІАНСЬКОЇ ДАТИ В СЛОВ'ЯНСЬКУ
-// ОСНОВНА ФУНКЦІЯ ПЕРЕКЛАДУ ГРИГОРІАНСЬКОЇ ДАТИ В СЛОВ'ЯНСЬКУ
+
 function toSlavic(date) {
     if (!KOLYADA_DATA) return null;
     if (!(date instanceof Date) || isNaN(date.getTime())) return null;
@@ -211,21 +211,39 @@ function toSlavic(date) {
     
     // Якщо дата раніше початку циклу, знаходимо найближчий попередній цикл
     if (targetMs < cycleMs) {
-        const diffMs = cycleMs - targetMs;
-        let cyclesBack = Math.floor(diffMs / cycleDaysMs);
-        adjustedCycleMs = cycleMs - cyclesBack * cycleDaysMs;
-        adjustedYear = startSlavicYear - cyclesBack * cycleYears;
+        // Тимчасові змінні
+        let tempCycleMs = cycleMs;
+        let tempYear = startSlavicYear;
+        const cycleMsDuration = KOLYADA_DATA.meta.cycle_days * 86400000;
+        
+        // Віднімаємо цілі 144-річні цикли, поки не станемо раніше target date
+        while (tempCycleMs > targetMs) {
+            tempCycleMs -= cycleMsDuration;
+            tempYear -= KOLYADA_DATA.meta.cycle_length_years;
+        }
+        
+        adjustedCycleMs = tempCycleMs;
+        adjustedYear = tempYear;
     }
     
     let diffMs = targetMs - adjustedCycleMs;
     
-    // Корекція початку доби (доба починається з встановленої години)
-    const startHour = cycleStart.getHours();
+    /*const startHour = cycleStart.getHours();
     if (date.getHours() < startHour) {
         diffMs -= 86400000;
-    }
+    }*/
     
-    let totalDays = Math.floor(diffMs / 86400000);
+    // Коригуємо від’ємний diffMs
+    let totalDays;
+    if (diffMs >= 0) {
+        totalDays = Math.floor(diffMs / 86400000);
+        diffMs = diffMs % 86400000;
+    } else {
+        // diffMs від’ємний, додаємо стільки діб, щоб він став додатним
+        let daysToAdd = Math.ceil(-diffMs / 86400000);
+        totalDays = -daysToAdd;
+        diffMs += daysToAdd * 86400000;
+    }
     
     // Визначення року (безпечний лічильник)
     let yearOffset = 0;
@@ -295,7 +313,7 @@ function toSlavic(date) {
     
     // День тижня (9-денний) зі зміщенням +8, щоб 1 Рамхат був Неделею
     const daysSinceStart = Math.floor((targetMs - adjustedCycleMs) / 86400000);
-    let weekdayIdx = (daysSinceStart + 8) % KOLYADA_DATA.weekdays.length;
+    let weekdayIdx = (daysSinceStart + 9) % KOLYADA_DATA.weekdays.length;
     if (weekdayIdx < 0) weekdayIdx += KOLYADA_DATA.weekdays.length;
     const weekdayData = KOLYADA_DATA.weekdays[weekdayIdx];
     const weekday = weekdayData.name;
@@ -305,9 +323,11 @@ function toSlavic(date) {
     const offset16 = (slavicYear - startSlavicYear) % KOLYADA_DATA.meta.subcycle_length_years;
     let yearName = KOLYADA_DATA.year_names_versions[currentVersion].years_16[offset16 < 0 ? offset16 + 16 : offset16];
     
-    // Стихія (9-річний цикл)
-    const elementOffset = (slavicYear - startSlavicYear) % KOLYADA_DATA.elements.length;
-    const element = KOLYADA_DATA.elements[elementOffset < 0 ? elementOffset + KOLYADA_DATA.elements.length : elementOffset];
+    // Стихія (18-річний цикл, кожна стихія на 2 роки)
+    const elementOffset = Math.floor(((slavicYear - startSlavicYear) / 2)) % KOLYADA_DATA.elements.length;
+    let safeOffset = elementOffset % KOLYADA_DATA.elements.length;
+    if (safeOffset < 0) safeOffset += KOLYADA_DATA.elements.length;
+    const element = KOLYADA_DATA.elements[safeOffset];
     
     return {
         year: slavicYear,
@@ -325,6 +345,7 @@ function toSlavic(date) {
         yearName: yearName,
         elementName: element.name,
         elementColor: element.color,
+        elementMeaning: element.meaning,
         elementHex: element.color_hex,
         isSummer: isSummer,
         chertog: chertog,
@@ -334,30 +355,15 @@ function toSlavic(date) {
     };
 }
 
-// Синхронізація часу
+// Синхронізація часу – використовуємо тільки час пристрою
 async function syncTime() {
-    try {
-        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-        const data = await response.json();
-        const serverUtcMs = Date.parse(data.utc_datetime);
-        const localOffsetMs = new Date().getTimezoneOffset() * 60000;
-        const serverLocalMs = serverUtcMs - localOffsetMs;
-        exactLocalMs = serverLocalMs;
-        syncDeviceMs = Date.now();
-        syncError = false;
-        const syncStatus = document.getElementById('kolyadaSyncStatus');
-        if (syncStatus) {
-            syncStatus.innerHTML = '✓ Синхронізовано з інтернет-часом';
-            syncStatus.style.color = '#6b8c5c';
-        }
-    } catch (e) {
-        syncError = true;
-        exactLocalMs = null;
-        const syncStatus = document.getElementById('kolyadaSyncStatus');
-        if (syncStatus) {
-            syncStatus.innerHTML = '⚠️ Немає синхронізації, час пристрою';
-            syncStatus.style.color = '#a0886a';
-        }
+    // Просто позначаємо, що синхронізація не потрібна
+    syncError = false;
+    exactLocalMs = null;
+    const syncStatus = document.getElementById('kolyadaSyncStatus');
+    if (syncStatus) {
+        syncStatus.innerHTML = '✓ Час пристрою';
+        syncStatus.style.color = '#6b8c5c';
     }
 }
 
@@ -403,12 +409,16 @@ function updateUI() {
         sHourName: s.hourName,
         hourDesc: s.hourDescription,
         yearName: `✧ ${s.yearName} ✧`,
-        elementInfo: `${s.elementName} (${s.elementColor})`
+        elementInfo: `СТИХІЯ:<span style="color: ${s.elementHex}; text-shadow: 1px 1px 0 rgba(0,0,0,0.7);">${s.elementName} (${s.elementColor}) — ${s.elementMeaning}</span>`
     };
     
     for (const [id, value] of Object.entries(elements)) {
         const el = document.getElementById(`kolyada${id.charAt(0).toUpperCase() + id.slice(1)}`);
         if (el) el.innerHTML = value;
+        const elementInfoEl = document.getElementById('kolyadaElementInfo');
+        if (elementInfoEl) {
+            elementInfoEl.style.textShadow = '1px 1px 0 rgba(0,0,0,0.2)';
+        }
     }
     
     const slavicCard = document.getElementById('kolyadaSlavicCard');
@@ -479,7 +489,7 @@ function showConverterResult() {
         ${chertogHtml}
         ${hallHtml}
         <div style="border-top:1px solid #c4a35a; margin:0.4rem 0;"></div>
-        <div><strong>СТИХІЯ:</strong> ${s.elementName} (${s.elementColor})</div>
+        <div><strong>СТИХІЯ:</strong> <span style="color: ${s.elementHex}; text-shadow: 1px 1px 0 rgba(0,0,0,0.7);">${s.elementName} (${s.elementColor}) — ${s.elementMeaning}</span></div>
         <div style="width:100%; height:16px; background:${s.elementHex}; border-radius:8px; margin-top:0.4rem;"></div>
     `;
     
@@ -521,8 +531,6 @@ window.initKolyadaDar = async function() {
     updateUI();
     if (window.kolyadaInterval) clearInterval(window.kolyadaInterval);
     window.kolyadaInterval = setInterval(updateUI, 100);
-    if (window.kolyadaSyncInterval) clearInterval(window.kolyadaSyncInterval);
-    window.kolyadaSyncInterval = setInterval(syncTime, 600000);
     
     const convertBtn = document.getElementById('kolyadaConvertBtn');
     const setCurrentBtn = document.getElementById('kolyadaSetCurrentBtn');
