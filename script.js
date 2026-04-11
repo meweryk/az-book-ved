@@ -765,7 +765,7 @@ function mergeWithBase(baseData) {
 async function initDatabase() {
   console.log('=== ІНІЦІАЛІЗАЦІЯ ДОДАТКУ ===');
   console.log('Префікс додатку:', appStorage.prefix);
-  console.log('Ключі додатку в localStorage:', appStorage.getAllKeys());
+  console.log('Ключі додатку `в` localStorage:', appStorage.getAllKeys());
   
   // Мігруємо старі дані
   const migrated = appStorage.migrateOldData();
@@ -796,6 +796,32 @@ async function initDatabase() {
     }
   } else {
     console.log('Версії співпадають, оновлення не потрібне');
+  }
+  
+  // Завантаження даних для календаря (аналогічно sings.json)
+  try {
+    const kolyadaResponse = await fetch('kolyadaDar.json', { cache: 'no-cache' });
+    if (kolyadaResponse.ok) {
+      const kolyadaData = await kolyadaResponse.json();
+      // Зберігаємо в localStorage окремим ключем
+      appStorage.setItem('kolyadaData', JSON.stringify(kolyadaData));
+      window.kolyadaData = kolyadaData;
+      console.log('kolyadaDar.json завантажено та збережено');
+    } else {
+      // Якщо fetch не вдався, пробуємо взяти з localStorage
+      const cached = appStorage.getItem('kolyadaData');
+      if (cached) {
+        window.kolyadaData = JSON.parse(cached);
+        console.log('kolyadaDar.json завантажено з localStorage');
+      }
+    }
+  } catch (err) {
+    console.error('Помилка завантаження kolyadaDar.json', err);
+    const cached = appStorage.getItem('kolyadaData');
+    if (cached) {
+      window.kolyadaData = JSON.parse(cached);
+      console.log('kolyadaDar.json завантажено з localStorage (після помилки)');
+    }
   }
   
   console.log('=== ПОТОЧНИЙ СТАН ===');

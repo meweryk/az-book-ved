@@ -111,11 +111,29 @@ function isSummerTime(date) {
 
 // Завантаження даних з JSON
 async function loadKolyadaData() {
+    // Спочатку перевіряємо глобальну змінну (з основного додатку)
+    if (window.kolyadaData) {
+        KOLYADA_DATA = window.kolyadaData;
+        console.log('Дані календаря отримано з window.kolyadaData');
+        return true;
+    }
+    
+    // Запасний варіант – напряму з localStorage
+    const cached = localStorage.getItem('az-book-ved_kolyadaData');
+    if (cached) {
+        try {
+            KOLYADA_DATA = JSON.parse(cached);
+            console.log('Дані календаря отримано з localStorage');
+            return true;
+        } catch (e) {}
+    }
+    
+    // Останній варіант – fetch (для самостійної роботи)
     try {
         const response = await fetch('./kolyadaDar.json');
         if (!response.ok) throw new Error('Не вдалося завантажити дані');
         KOLYADA_DATA = await response.json();
-        console.log('Дані календаря завантажено');
+        console.log('Дані календаря завантажено з мережі');
         return true;
     } catch (error) {
         console.error('Помилка завантаження даних:', error);
@@ -211,19 +229,10 @@ function toSlavic(date) {
     
     // Якщо дата раніше початку циклу, знаходимо найближчий попередній цикл
     if (targetMs < cycleMs) {
-        // Тимчасові змінні
-        let tempCycleMs = cycleMs;
-        let tempYear = startSlavicYear;
-        const cycleMsDuration = KOLYADA_DATA.meta.cycle_days * 86400000;
-        
-        // Віднімаємо цілі 144-річні цикли, поки не станемо раніше target date
-        while (tempCycleMs > targetMs) {
-            tempCycleMs -= cycleMsDuration;
-            tempYear -= KOLYADA_DATA.meta.cycle_length_years;
-        }
-        
-        adjustedCycleMs = tempCycleMs;
-        adjustedYear = tempYear;
+        const diffMs = cycleMs - targetMs;
+        let cyclesBack = Math.floor(diffMs / cycleDaysMs);
+        adjustedCycleMs = cycleMs - cyclesBack * cycleDaysMs;
+        adjustedYear = startSlavicYear - cyclesBack * cycleYears;
     }
     
     let diffMs = targetMs - adjustedCycleMs;
